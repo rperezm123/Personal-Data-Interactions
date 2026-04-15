@@ -1,0 +1,65 @@
+---
+import Layout from '../layouts/Layout.astro';
+import MyButton from '../components/button.jsx';
+import DashboardPanel from '../components/DashboardPanel.jsx';
+import "../styles/global.css";
+---
+
+<Layout>
+  <section class="min-h-screen bg-slate-50 px-6 py-10">
+    <div class="mx-auto flex max-w-6xl flex-col gap-10">
+      
+      <div class="flex flex-col gap-3 text-center">
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
+          Dashboard
+        </p>
+        <h1 class="text-4xl font-extrabold text-slate-900 md:text-6xl">
+          Sleep Tracker Dashboard
+        </h1>
+        <p class="mx-auto max-w-2xl text-lg text-slate-600">
+          Choose a date, add daily data, explore visualisations, or start a habit experiment.
+        </p>
+      </div>
+
+      <DashboardPanel client:load />
+
+      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <a href="/new-day" class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+          <div class="mb-4 text-3xl">📝</div>
+          <h3 class="mb-2 text-xl font-bold text-slate-900">New Day</h3>
+          <p class="mb-5 text-slate-600">
+            Add sleep hours, deep sleep, caffeine, steps, and screen time.
+          </p>
+          <MyButton name="Open" />
+        </a>
+
+        <a href="/visualisations" class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+          <div class="mb-4 text-3xl">📈</div>
+          <h3 class="mb-2 text-xl font-bold text-slate-900">Visualisations</h3>
+          <p class="mb-5 text-slate-600">
+            Check patterns, correlations, and compare weekdays with weekends.
+          </p>
+          <MyButton name="Open" />
+        </a>
+
+        <a href="/goals" class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+          <div class="mb-4 text-3xl">🎯</div>
+          <h3 class="mb-2 text-xl font-bold text-slate-900">Goals</h3>
+          <p class="mb-5 text-slate-600">
+            Set behavior targets such as no caffeine after 3 PM.
+          </p>
+          <MyButton name="Open" />
+        </a>
+
+        <a href="/experiment" class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+          <div class="mb-4 text-3xl">🧪</div>
+          <h3 class="mb-2 text-xl font-bold text-slate-900">Experiment Mode</h3>
+          <p class="mb-5 text-slate-600">
+            Test one variable at a time and observe its effect on deep sleep.
+          </p>
+          <MyButton name="Open" />
+        </a>
+      </div>
+    </div>
+  </section>
+</Layout>

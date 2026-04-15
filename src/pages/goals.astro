@@ -1,0 +1,145 @@
+---
+import Layout from '../layouts/Layout.astro';
+import MyButton from '../components/button.jsx';
+import "../styles/global.css";
+---
+
+<Layout>
+  <section class="min-h-screen bg-slate-50 px-6 py-10">
+    <div class="mx-auto flex max-w-6xl flex-col gap-8">
+      
+      <div class="text-center">
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
+          Goals
+        </p>
+        <h1 class="mt-2 text-4xl font-extrabold text-slate-900 md:text-6xl">
+          Set sleep improvement goals
+        </h1>
+        <p class="mx-auto mt-4 max-w-3xl text-lg text-slate-600">
+          Create your own goals and get suggestions based on the daily habits that may affect your deep sleep.
+        </p>
+      </div>
+
+      <div class="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+        
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+          <h2 class="mb-6 text-2xl font-bold text-slate-900">Create your own goal</h2>
+
+          <form class="grid gap-6">
+            <div>
+              <label class="mb-2 block font-semibold text-slate-800">Goal title</label>
+              <input
+                type="text"
+                placeholder="e.g. No caffeine after 3 PM"
+                class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500"
+              />
+            </div>
+
+            <div>
+              <label class="mb-2 block font-semibold text-slate-800">Why do you want this goal?</label>
+              <textarea
+                rows="4"
+                placeholder="e.g. I think late coffee is reducing my deep sleep."
+                class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500"
+              ></textarea>
+            </div>
+
+            <div class="grid gap-5 md:grid-cols-2">
+              <div>
+                <label class="mb-2 block font-semibold text-slate-800">Category</label>
+                <select class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500">
+                  <option value="">Select category</option>
+                  <option value="caffeine">Caffeine</option>
+                  <option value="screen-time">Screen time</option>
+                  <option value="phone-use">Phone use</option>
+                  <option value="activity">Physical activity</option>
+                  <option value="sleep">Sleep routine</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-2 block font-semibold text-slate-800">Target duration</label>
+                <select class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500">
+                  <option value="">Select duration</option>
+                  <option value="3days">3 days</option>
+                  <option value="1week">1 week</option>
+                  <option value="2weeks">2 weeks</option>
+                  <option value="1month">1 month</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="mb-2 block font-semibold text-slate-800">Reminder preference</label>
+              <select class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500">
+                <option value="">Select reminder type</option>
+                <option value="none">No reminder</option>
+                <option value="daily">Daily reminder</option>
+                <option value="habit-risk">Only when risky habit is detected</option>
+                <option value="evening">Evening reminder</option>
+              </select>
+            </div>
+
+            <div class="flex flex-wrap gap-4 pt-2">
+              <MyButton name="Save Goal" />
+              <a href="/dashboard">
+                <MyButton name="Back to Dashboard" />
+              </a>
+            </div>
+          </form>
+        </div>
+
+        <div class="flex flex-col gap-6">
+          <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 class="mb-4 text-2xl font-bold text-slate-900">Suggested goals</h2>
+            <p class="mb-5 text-slate-600">
+              Suggestions can adapt to patterns detected in the user’s daily entries.
+            </p>
+
+            <div class="flex flex-col gap-4">
+              <div class="rounded-2xl bg-sky-50 p-4">
+                <p class="text-sm font-semibold uppercase tracking-wide text-sky-700">Caffeine pattern</p>
+                <h3 class="mt-2 text-lg font-bold text-slate-900">Avoid caffeine after 3 PM</h3>
+                <p class="mt-2 text-slate-600">
+                  Useful if late caffeine appears on days with reduced deep sleep.
+                </p>
+              </div>
+
+              <div class="rounded-2xl bg-emerald-50 p-4">
+                <p class="text-sm font-semibold uppercase tracking-wide text-emerald-700">Activity pattern</p>
+                <h3 class="mt-2 text-lg font-bold text-slate-900">Reach 8,000 steps daily</h3>
+                <p class="mt-2 text-slate-600">
+                  Useful if low-activity days seem related to worse sleep quality.
+                </p>
+              </div>
+
+              <div class="rounded-2xl bg-violet-50 p-4">
+                <p class="text-sm font-semibold uppercase tracking-wide text-violet-700">Screen routine</p>
+                <h3 class="mt-2 text-lg font-bold text-slate-900">Reduce screen time in the evening</h3>
+                <p class="mt-2 text-slate-600">
+                  Useful if high screen time or late phone use appears before poor sleep nights.
+                </p>
+              </div>
+
+              <div class="rounded-2xl bg-amber-50 p-4">
+                <p class="text-sm font-semibold uppercase tracking-wide text-amber-700">Sleep consistency</p>
+                <h3 class="mt-2 text-lg font-bold text-slate-900">Keep a more regular bedtime</h3>
+                <p class="mt-2 text-slate-600">
+                  Useful if irregular routines are linked with shorter or lower-quality sleep.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-3xl border border-slate-200 bg-slate-900 p-6 text-white shadow-sm">
+            <h2 class="mb-4 text-2xl font-bold">How suggestions work</h2>
+            <p class="text-slate-300">
+              The system compares daily habits such as caffeine after 3 PM, steps, screen time,
+              and last phone use time with sleep outcomes to propose useful goals for behavior change.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

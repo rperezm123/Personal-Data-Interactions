@@ -1,0 +1,236 @@
+---
+import Layout from '../layouts/Layout.astro';
+import MyButton from '../components/button.jsx';
+import "../styles/global.css";
+---
+
+<Layout>
+  <section class="min-h-screen bg-slate-50 px-6 py-10">
+    <div class="mx-auto flex max-w-7xl flex-col gap-8">
+      
+      <div class="text-center">
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
+          Visualisations
+        </p>
+        <h1 class="mt-2 text-4xl font-extrabold text-slate-900 md:text-6xl">
+          Explore your sleep and habit patterns
+        </h1>
+        <p class="mx-auto mt-4 max-w-3xl text-lg text-slate-600">
+          Compare deep sleep with caffeine, screen time, activity, and other daily behaviors to find meaningful patterns.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap justify-center gap-4">
+        <a href="/dashboard">
+          <MyButton name="Back to Dashboard" />
+        </a>
+        <a href="/new-day">
+          <MyButton name="Add New Day" />
+        </a>
+      </div>
+
+      <div class="grid gap-6 xl:grid-cols-2">
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 class="mb-2 text-2xl font-bold text-slate-900">Deep sleep by day</h2>
+          <p class="mb-5 text-slate-600">
+            A simple overview of deep sleep duration across recent days.
+          </p>
+          <div id="chart-deep-sleep"></div>
+        </div>
+
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 class="mb-2 text-2xl font-bold text-slate-900">Caffeine vs deep sleep</h2>
+          <p class="mb-5 text-slate-600">
+            Compare late caffeine habits with deep sleep duration.
+          </p>
+          <div id="chart-caffeine"></div>
+        </div>
+
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 class="mb-2 text-2xl font-bold text-slate-900">Weekday vs weekend</h2>
+          <p class="mb-5 text-slate-600">
+            Compare average deep sleep across weekdays and weekends.
+          </p>
+          <div id="chart-weekday-weekend"></div>
+        </div>
+
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 class="mb-2 text-2xl font-bold text-slate-900">Steps vs deep sleep</h2>
+          <p class="mb-5 text-slate-600">
+            Check whether more activity is associated with better deep sleep.
+          </p>
+          <div id="chart-steps"></div>
+        </div>
+      </div>
+
+      <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 class="mb-2 text-2xl font-bold text-slate-900">Weekly pattern heatmap</h2>
+        <p class="mb-5 text-slate-600">
+          A heatmap-style overview to reveal patterns across the week.
+        </p>
+        <div id="chart-heatmap"></div>
+      </div>
+    </div>
+  </section>
+
+  <script type="module">
+    import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+
+    const sleepData = [
+      { day: "Mon", weekend: "Weekday", deepSleep: 1.5, caffeineAfter3: "No", steps: 8200, screenTime: 3.2, phoneTime: 22.1, score: 4 },
+      { day: "Tue", weekend: "Weekday", deepSleep: 1.2, caffeineAfter3: "Yes", steps: 5400, screenTime: 5.6, phoneTime: 23.4, score: 2 },
+      { day: "Wed", weekend: "Weekday", deepSleep: 1.9, caffeineAfter3: "No", steps: 9100, screenTime: 2.8, phoneTime: 21.8, score: 5 },
+      { day: "Thu", weekend: "Weekday", deepSleep: 1.4, caffeineAfter3: "Yes", steps: 6700, screenTime: 4.8, phoneTime: 23.1, score: 3 },
+      { day: "Fri", weekend: "Weekday", deepSleep: 1.0, caffeineAfter3: "Yes", steps: 4300, screenTime: 6.1, phoneTime: 23.8, score: 2 },
+      { day: "Sat", weekend: "Weekend", deepSleep: 2.1, caffeineAfter3: "No", steps: 10300, screenTime: 3.9, phoneTime: 22.7, score: 5 },
+      { day: "Sun", weekend: "Weekend", deepSleep: 1.8, caffeineAfter3: "No", steps: 8700, screenTime: 3.4, phoneTime: 22.0, score: 4 }
+    ];
+
+    const heatmapData = [
+      { habit: "Caffeine after 3 PM", day: "Mon", value: 1 },
+      { habit: "Caffeine after 3 PM", day: "Tue", value: 0 },
+      { habit: "Caffeine after 3 PM", day: "Wed", value: 1 },
+      { habit: "Caffeine after 3 PM", day: "Thu", value: 0 },
+      { habit: "Caffeine after 3 PM", day: "Fri", value: 0 },
+      { habit: "Caffeine after 3 PM", day: "Sat", value: 1 },
+      { habit: "Caffeine after 3 PM", day: "Sun", value: 1 },
+
+      { habit: "High activity", day: "Mon", value: 1 },
+      { habit: "High activity", day: "Tue", value: 0 },
+      { habit: "High activity", day: "Wed", value: 1 },
+      { habit: "High activity", day: "Thu", value: 0 },
+      { habit: "High activity", day: "Fri", value: 0 },
+      { habit: "High activity", day: "Sat", value: 1 },
+      { habit: "High activity", day: "Sun", value: 1 },
+
+      { habit: "Low screen time", day: "Mon", value: 1 },
+      { habit: "Low screen time", day: "Tue", value: 0 },
+      { habit: "Low screen time", day: "Wed", value: 1 },
+      { habit: "Low screen time", day: "Thu", value: 0 },
+      { habit: "Low screen time", day: "Fri", value: 0 },
+      { habit: "Low screen time", day: "Sat", value: 1 },
+      { habit: "Low screen time", day: "Sun", value: 1 },
+
+      { habit: "High deep sleep", day: "Mon", value: 1 },
+      { habit: "High deep sleep", day: "Tue", value: 0 },
+      { habit: "High deep sleep", day: "Wed", value: 1 },
+      { habit: "High deep sleep", day: "Thu", value: 0 },
+      { habit: "High deep sleep", day: "Fri", value: 0 },
+      { habit: "High deep sleep", day: "Sat", value: 1 },
+      { habit: "High deep sleep", day: "Sun", value: 1 }
+    ];
+
+    const commonStyles = {
+      style: {
+        background: "white",
+        color: "#0f172a",
+        fontSize: "14px"
+      },
+      marginLeft: 60,
+      marginBottom: 50,
+      width: 520,
+      height: 320
+    };
+
+    const deepSleepChart = Plot.plot({
+      ...commonStyles,
+      y: { grid: true, label: "Hours" },
+      x: { label: "Day" },
+      marks: [
+        Plot.barY(sleepData, { x: "day", y: "deepSleep", fill: "#0ea5e9", rx: 8 }),
+        Plot.ruleY([0])
+      ]
+    });
+
+    document.querySelector("#chart-deep-sleep")?.append(deepSleepChart);
+
+    const caffeineChart = Plot.plot({
+      ...commonStyles,
+      y: { grid: true, label: "Deep sleep (hours)" },
+      x: { label: "Caffeine after 3 PM" },
+      marks: [
+        Plot.dot(sleepData, {
+          x: "caffeineAfter3",
+          y: "deepSleep",
+          fill: "caffeineAfter3",
+          r: 8,
+          tip: true
+        }),
+        Plot.ruleY([0])
+      ]
+    });
+
+    document.querySelector("#chart-caffeine")?.append(caffeineChart);
+
+    const weekdayWeekendChart = Plot.plot({
+      ...commonStyles,
+      y: { grid: true, label: "Average deep sleep (hours)" },
+      x: { label: "" },
+      marks: [
+        Plot.barY(
+          sleepData,
+          Plot.groupX(
+            { y: "mean" },
+            { x: "weekend", y: "deepSleep", fill: "weekend", rx: 8 }
+          )
+        ),
+        Plot.ruleY([0])
+      ]
+    });
+
+    document.querySelector("#chart-weekday-weekend")?.append(weekdayWeekendChart);
+
+    const stepsChart = Plot.plot({
+      ...commonStyles,
+      x: { grid: true, label: "Steps" },
+      y: { grid: true, label: "Deep sleep (hours)" },
+      marks: [
+        Plot.dot(sleepData, {
+          x: "steps",
+          y: "deepSleep",
+          fill: "#10b981",
+          r: 8,
+          tip: true
+        }),
+        Plot.ruleY([0])
+      ]
+    });
+
+    document.querySelector("#chart-steps")?.append(stepsChart);
+
+    const heatmapChart = Plot.plot({
+      marginLeft: 140,
+      marginBottom: 50,
+      width: 1100,
+      height: 360,
+      style: {
+        background: "white",
+        color: "#0f172a",
+        fontSize: "14px"
+      },
+      color: {
+        scheme: "Blues",
+        legend: true,
+        label: "Pattern strength"
+      },
+      x: { label: "Day of week" },
+      y: { label: "" },
+      marks: [
+        Plot.cell(heatmapData, {
+          x: "day",
+          y: "habit",
+          fill: "value",
+          inset: 1
+        }),
+        Plot.text(heatmapData, {
+          x: "day",
+          y: "habit",
+          text: (d) => d.value === 1 ? "High" : "Low",
+          fill: "#0f172a"
+        })
+      ]
+    });
+
+    document.querySelector("#chart-heatmap")?.append(heatmapChart);
+  </script>
+</Layout>

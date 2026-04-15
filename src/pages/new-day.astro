@@ -1,0 +1,145 @@
+---
+import Layout from '../layouts/Layout.astro';
+import MyButton from '../components/button.jsx';
+import "../styles/global.css";
+---
+
+<Layout>
+  <section class="min-h-screen bg-slate-50 px-6 py-10">
+    <div class="mx-auto flex max-w-5xl flex-col gap-8">
+      <div class="text-center">
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
+          Daily Entry
+        </p>
+        <h1 class="mt-2 text-4xl font-extrabold text-slate-900 md:text-6xl">
+          New Day Entry
+        </h1>
+        <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
+          Add today’s sleep and habit data to discover how your daily behavior affects deep sleep.
+        </p>
+      </div>
+
+      <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+        <form id="day-entry-form" class="grid gap-8">
+          <div>
+            <h2 class="mb-4 text-2xl font-bold text-slate-900">Sleep data</h2>
+            <div class="grid gap-5 md:grid-cols-2">
+              <div>
+                <label class="mb-2 block font-semibold text-slate-800">Date</label>
+                <input id="date" type="date" class="w-full rounded-xl border border-slate-300 px-4 py-3" />
+              </div>
+
+              <div>
+                <label class="mb-2 block font-semibold text-slate-800">Total Sleep Hours</label>
+                <input id="totalSleep" type="number" step="0.5" min="0" max="24" placeholder="e.g. 7.5" class="w-full rounded-xl border border-slate-300 px-4 py-3" />
+              </div>
+
+              <div>
+                <label class="mb-2 block font-semibold text-slate-800">Deep Sleep (hours)</label>
+                <input id="deepSleep" type="number" step="0.1" min="0" max="24" placeholder="e.g. 1.8" class="w-full rounded-xl border border-slate-300 px-4 py-3" />
+              </div>
+
+              <div>
+                <label class="mb-2 block font-semibold text-slate-800">Sleep Quality</label>
+                <select id="sleepQuality" class="w-full rounded-xl border border-slate-300 px-4 py-3">
+                  <option value="">Select quality</option>
+                  <option value="excellent">Excellent</option>
+                  <option value="good">Good</option>
+                  <option value="fair">Fair</option>
+                  <option value="poor">Poor</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h2 class="mb-4 text-2xl font-bold text-slate-900">Daily habits</h2>
+            <div class="grid gap-5 md:grid-cols-2">
+              <div>
+                <label class="mb-2 block font-semibold text-slate-800">Caffeine After 3 PM</label>
+                <select id="caffeineAfter3" class="w-full rounded-xl border border-slate-300 px-4 py-3">
+                  <option value="">Select option</option>
+                  <option value="No">No</option>
+                  <option value="Yes">Yes</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-2 block font-semibold text-slate-800">Steps</label>
+                <input id="steps" type="number" min="0" placeholder="e.g. 8500" class="w-full rounded-xl border border-slate-300 px-4 py-3" />
+              </div>
+
+              <div>
+                <label class="mb-2 block font-semibold text-slate-800">Screen Time (hours)</label>
+                <input id="screenTime" type="number" step="0.1" min="0" max="24" placeholder="e.g. 4.2" class="w-full rounded-xl border border-slate-300 px-4 py-3" />
+              </div>
+
+              <div>
+                <label class="mb-2 block font-semibold text-slate-800">Last Phone Use Time</label>
+                <input id="lastPhoneUse" type="time" class="w-full rounded-xl border border-slate-300 px-4 py-3" />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h2 class="mb-4 text-2xl font-bold text-slate-900">Reflection</h2>
+            <div>
+              <label class="mb-2 block font-semibold text-slate-800">Notes</label>
+              <textarea id="notes" rows="5" placeholder="Add anything important about your day or sleep." class="w-full rounded-xl border border-slate-300 px-4 py-3"></textarea>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap justify-center gap-4 pt-4">
+            <button type="submit">
+              <MyButton name="Save Entry" />
+            </button>
+            <a href="/dashboard">
+              <MyButton name="Back to Dashboard" />
+            </a>
+          </div>
+
+          <p id="save-message" class="text-center font-medium text-emerald-600"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <script>
+  const form = document.getElementById("day-entry-form") as HTMLFormElement | null;
+  const message = document.getElementById("save-message") as HTMLParagraphElement | null;
+
+  form?.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const entry = {
+      date: (document.getElementById("date") as HTMLInputElement | null)?.value || "",
+      totalSleep: Number((document.getElementById("totalSleep") as HTMLInputElement | null)?.value || 0),
+      deepSleep: Number((document.getElementById("deepSleep") as HTMLInputElement | null)?.value || 0),
+      sleepQuality: (document.getElementById("sleepQuality") as HTMLSelectElement | null)?.value || "",
+      caffeineAfter3: (document.getElementById("caffeineAfter3") as HTMLSelectElement | null)?.value || "",
+      steps: Number((document.getElementById("steps") as HTMLInputElement | null)?.value || 0),
+      screenTime: Number((document.getElementById("screenTime") as HTMLInputElement | null)?.value || 0),
+      lastPhoneUse: (document.getElementById("lastPhoneUse") as HTMLInputElement | null)?.value || "",
+      notes: (document.getElementById("notes") as HTMLTextAreaElement | null)?.value || ""
+    };
+
+    const existingEntries = JSON.parse(localStorage.getItem("sleepEntries") || "[]");
+    existingEntries.push(entry);
+    localStorage.setItem("sleepEntries", JSON.stringify(existingEntries));
+
+    console.log("Saved entries:", existingEntries);
+
+    if (message) {
+      message.textContent = "Entry saved successfully";
+    }
+
+    form.reset();
+
+    setTimeout(() => {
+      window.location.href = "/visualisations";
+    }, 700);
+  });
+</script>
+
+
+</Layout>

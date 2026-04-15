@@ -1,0 +1,101 @@
+---
+import Layout from '../layouts/Layout.astro';
+import MyButton from '../components/button.jsx';
+import "../styles/global.css";
+---
+
+<Layout>
+  <section class="min-h-screen bg-gradient-to-b from-sky-50 to-white px-6 py-10">
+    <div class="mx-auto flex max-w-6xl flex-col justify-center gap-16">
+      
+      <div class="flex flex-col items-center gap-6 text-center pt-10">
+        <p class="rounded-full bg-sky-100 px-4 py-2 text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
+          Personal Sleep Informatics
+        </p>
+
+        <h1 class="max-w-5xl text-5xl font-extrabold leading-tight text-slate-900 md:text-7xl">
+          Optimize your daily habits to enhance deep sleep
+        </h1>
+
+        <p class="max-w-3xl text-lg leading-8 text-slate-600 md:text-xl">
+          Track caffeine, screen time, physical activity, and sleep patterns to understand
+          what helps or harms your deep sleep, then turn those insights into better habits.
+        </p>
+
+        <div class="mt-4 flex flex-wrap justify-center gap-4">
+          <a href="/dashboard">
+            <MyButton name="Start Tracking" />
+          </a>
+        </div>
+      </div>
+
+      <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="mb-4 text-3xl">🌙</div>
+          <h2 class="mb-3 text-xl font-bold text-slate-900">Daily tracking</h2>
+          <p class="text-slate-600">
+            Log total sleep, deep sleep, caffeine after 3 PM, steps, screen time, and phone use.
+          </p>
+        </div>
+
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="mb-4 text-3xl">📊</div>
+          <h2 class="mb-3 text-xl font-bold text-slate-900">Visual insights</h2>
+          <p class="text-slate-600">
+            Explore patterns, heatmaps, and comparisons such as weekdays versus weekends.
+          </p>
+        </div>
+
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="mb-4 text-3xl">🎯</div>
+          <h2 class="mb-3 text-xl font-bold text-slate-900">Goals</h2>
+          <p class="text-slate-600">
+            Set targets like no caffeine after 3 PM and use reminders to support better habits.
+          </p>
+        </div>
+
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="mb-4 text-3xl">🧪</div>
+          <h2 class="mb-3 text-xl font-bold text-slate-900">Experiment mode</h2>
+          <p class="text-slate-600">
+            Change one habit at a time and observe how it affects your deep sleep over time.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid items-center gap-8 rounded-3xl bg-slate-900 px-8 py-10 text-white md:grid-cols-2">
+        <div class="flex flex-col gap-4">
+          <p class="text-sm font-semibold uppercase tracking-[0.2em] text-sky-300">
+            Why this app
+          </p>
+          <h2 class="text-3xl font-bold md:text-4xl">
+            From passive awareness to active behavior change
+          </h2>
+          <p class="text-slate-300">
+            Instead of just collecting numbers, the system helps users connect daytime habits
+            with nighttime sleep quality in a clear, visual, and actionable way.
+          </p>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="rounded-2xl bg-slate-800 p-5">
+            <p class="text-sm text-sky-300">Track</p>
+            <p class="mt-2 text-lg font-semibold">Habits and sleep</p>
+          </div>
+          <div class="rounded-2xl bg-slate-800 p-5">
+            <p class="text-sm text-sky-300">Discover</p>
+            <p class="mt-2 text-lg font-semibold">Patterns and correlations</p>
+          </div>
+          <div class="rounded-2xl bg-slate-800 p-5">
+            <p class="text-sm text-sky-300">Act</p>
+            <p class="mt-2 text-lg font-semibold">Set goals and reminders</p>
+          </div>
+          <div class="rounded-2xl bg-slate-800 p-5">
+            <p class="text-sm text-sky-300">Improve</p>
+            <p class="mt-2 text-lg font-semibold">Test one habit at a time</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
