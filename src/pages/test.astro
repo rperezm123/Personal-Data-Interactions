@@ -1,0 +1,18 @@
+---
+import { supabase } from "../../utils/supabase";
+
+const { data: todos, error } = await supabase
+  .from("Data") // 👈 KEEP uppercase
+  .select("*");
+
+console.log("DATA:", todos);
+console.log("ERROR:", error);
+---
+
+<ul>
+  {todos?.map((row: any) => (
+    <li>
+      {row.Sleep_quality} — {(row.Total_sleep != null ? (Number(row.Total_sleep) / 60).toFixed(1) : "—")} h total
+    </li>
+  ))}
+</ul>

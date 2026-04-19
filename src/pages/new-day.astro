@@ -90,49 +90,134 @@ import "../styles/global.css";
           </div>
 
           <div class="flex flex-wrap justify-center gap-4 pt-4">
-            <button type="submit">
-              <MyButton name="Save Entry" />
-            </button>
-            <a href="/dashboard">
-              <MyButton name="Back to Dashboard" />
-            </a>
+            <MyButton type="submit" name="Save Entry" />
+            <MyButton component="a" href="/dashboard" name="Back to Dashboard" />
           </div>
 
-          <p id="save-message" class="text-center font-medium text-emerald-600"></p>
+          <p id="save-message" class="text-center font-medium"></p>
         </form>
       </div>
     </div>
   </section>
 
   <script>
-  const form = document.getElementById("day-entry-form") as HTMLFormElement | null;
-  const message = document.getElementById("save-message") as HTMLParagraphElement | null;
+  import { supabase } from "../../utils/supabase";
 
-  form?.addEventListener("submit", (event) => {
-    event.preventDefault();
+  /**
+   * Matches `public."Data"`: date, "Total_sleep", "Deep_sleep", "Sleep_quality",
+   * "Caffeine", "Steps", "Screen" (all bigint except date/quality/time).
+   * Sleep + screen hours from the form are stored as whole minutes in bigint columns.
+   */
+  function formToDataRow() {
+    const dateEl = document.getElementById("date");
+    const totalSleepEl = document.getElementById("totalSleep");
+    const deepSleepEl = document.getElementById("deepSleep");
+    const sleepQualityEl = document.getElementById("sleepQuality");
+    const caffeineEl = document.getElementById("caffeineAfter3");
+    const stepsEl = document.getElementById("steps");
+    const screenTimeEl = document.getElementById("screenTime");
+    const lastPhoneEl = document.getElementById("lastPhoneUse");
 
-    const entry = {
-      date: (document.getElementById("date") as HTMLInputElement | null)?.value || "",
-      totalSleep: Number((document.getElementById("totalSleep") as HTMLInputElement | null)?.value || 0),
-      deepSleep: Number((document.getElementById("deepSleep") as HTMLInputElement | null)?.value || 0),
-      sleepQuality: (document.getElementById("sleepQuality") as HTMLSelectElement | null)?.value || "",
-      caffeineAfter3: (document.getElementById("caffeineAfter3") as HTMLSelectElement | null)?.value || "",
-      steps: Number((document.getElementById("steps") as HTMLInputElement | null)?.value || 0),
-      screenTime: Number((document.getElementById("screenTime") as HTMLInputElement | null)?.value || 0),
-      lastPhoneUse: (document.getElementById("lastPhoneUse") as HTMLInputElement | null)?.value || "",
-      notes: (document.getElementById("notes") as HTMLTextAreaElement | null)?.value || ""
-    };
+    const date = dateEl instanceof HTMLInputElement ? dateEl.value.trim() : "";
+    const totalSleepRaw = totalSleepEl instanceof HTMLInputElement ? totalSleepEl.value : "";
+    const deepSleepRaw = deepSleepEl instanceof HTMLInputElement ? deepSleepEl.value : "";
+    const sleepQuality =
+      sleepQualityEl instanceof HTMLSelectElement ? sleepQualityEl.value.trim() : "";
+    const caffeineAfter3 =
+      caffeineEl instanceof HTMLSelectElement ? caffeineEl.value.trim() : "";
+    const stepsRaw = stepsEl instanceof HTMLInputElement ? stepsEl.value : "";
+    const screenTimeRaw = screenTimeEl instanceof HTMLInputElement ? screenTimeEl.value : "";
+    const lastPhoneUse =
+      lastPhoneEl instanceof HTMLInputElement ? lastPhoneEl.value.trim() : "";
 
-    const existingEntries = JSON.parse(localStorage.getItem("sleepEntries") || "[]");
-    existingEntries.push(entry);
-    localStorage.setItem("sleepEntries", JSON.stringify(existingEntries));
-
-    console.log("Saved entries:", existingEntries);
-
-    if (message) {
-      message.textContent = "Entry saved successfully";
+    /** Hours (possibly decimal) → integer minutes for bigint columns */
+    function hoursToMinutesOrNull(raw = "") {
+      if (raw === "") return null;
+      const n = Number(raw);
+      if (!Number.isFinite(n)) return null;
+      return Math.round(n * 60);
     }
 
+    function stepsOrNull(raw = "") {
+      if (raw === "") return null;
+      const n = Number(raw);
+      if (!Number.isFinite(n)) return null;
+      return Math.round(n);
+    }
+
+    function caffeineOrNull(yesNo = "") {
+      if (yesNo === "Yes") return 1;
+      if (yesNo === "No") return 0;
+      return null;
+    }
+
+    function strOrNull(s = "") {
+      return s === "" ? null : s;
+    }
+
+    return {
+      date: date || null,
+      Total_sleep: hoursToMinutesOrNull(totalSleepRaw),
+      Deep_sleep: hoursToMinutesOrNull(deepSleepRaw),
+      Sleep_quality: strOrNull(sleepQuality),
+      Caffeine: caffeineOrNull(caffeineAfter3),
+      Steps: stepsOrNull(stepsRaw),
+      Screen: hoursToMinutesOrNull(screenTimeRaw),
+      Last_phone_time: strOrNull(lastPhoneUse),
+    };
+  }
+
+  const form = document.getElementById("day-entry-form");
+  const message = document.getElementById("save-message");
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!(form instanceof HTMLFormElement) || !(message instanceof HTMLParagraphElement)) return;
+
+    const row = formToDataRow();
+    if (!row.date) {
+      message.className = "text-center font-medium text-red-600";
+      message.textContent = "Please choose a date.";
+      return;
+    }
+
+    message.className = "text-center font-medium text-slate-600";
+    message.textContent = "Saving…";
+
+    const { data: existing, error: checkError } = await supabase
+      .from("Data")
+      .select("id")
+      .eq("date", row.date)
+      .limit(1);
+
+    if (checkError) {
+      console.error(checkError);
+      message.className = "text-center font-medium text-red-600";
+      message.textContent = checkError.message || "Could not verify this date.";
+      return;
+    }
+
+    if (existing && existing.length > 0) {
+      message.className = "text-center font-medium text-red-600";
+      message.textContent = "You already have an entry for this date. Pick another day or edit it in Supabase.";
+      return;
+    }
+
+    const { error } = await supabase.from("Data").insert([row]);
+
+    if (error) {
+      console.error(error);
+      message.className = "text-center font-medium text-red-600";
+      if (error.code === "23505") {
+        message.textContent = "An entry for this date already exists.";
+        return;
+      }
+      message.textContent = error.message || "Could not save. Check table columns and RLS policies.";
+      return;
+    }
+
+    message.className = "text-center font-medium text-emerald-600";
+    message.textContent = "Entry saved successfully";
     form.reset();
 
     setTimeout(() => {
