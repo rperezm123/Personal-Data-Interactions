@@ -29,208 +29,435 @@ import "../styles/global.css";
         </a>
       </div>
 
-      <div class="grid gap-6 xl:grid-cols-2">
+      <div class="grid gap-6 lg:grid-cols-2">
         <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 class="mb-2 text-2xl font-bold text-slate-900">Deep sleep by day</h2>
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-2xl font-bold text-slate-900">Sleep Trends Over Time</h2>
+            <div id="loading-indicator" class="w-3 h-3 bg-sky-500 rounded-full animate-pulse"></div>
+          </div>
           <p class="mb-5 text-slate-600">
-            A simple overview of deep sleep duration across recent days.
+            Track your total sleep and deep sleep patterns across recent days to identify trends and improvements.
           </p>
-          <div id="chart-deep-sleep"></div>
+          <div id="sleep-chart" class="transition-transform duration-300 hover:scale-[1.02]">
+            <div id="no-data-message" class="hidden text-center py-12 text-slate-500">
+              <p class="text-lg font-medium">No sleep data available yet</p>
+              <p class="text-sm mt-2">Start by adding your first day entry to see your sleep trends!</p>
+            </div>
+          </div>
         </div>
 
         <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 class="mb-2 text-2xl font-bold text-slate-900">Caffeine vs deep sleep</h2>
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-2xl font-bold text-slate-900">Habits vs Sleep Quality</h2>
+            <div id="loading-habits" class="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
+          </div>
           <p class="mb-5 text-slate-600">
-            Compare late caffeine habits with deep sleep duration.
+            See how your daily habits (caffeine, steps, screen time) correlate with your deep sleep duration.
           </p>
-          <div id="chart-caffeine"></div>
-        </div>
-
-        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 class="mb-2 text-2xl font-bold text-slate-900">Weekday vs weekend</h2>
-          <p class="mb-5 text-slate-600">
-            Compare average deep sleep across weekdays and weekends.
-          </p>
-          <div id="chart-weekday-weekend"></div>
-        </div>
-
-        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 class="mb-2 text-2xl font-bold text-slate-900">Steps vs deep sleep</h2>
-          <p class="mb-5 text-slate-600">
-            Check whether more activity is associated with better deep sleep.
-          </p>
-          <div id="chart-steps"></div>
+          <div id="habits-chart" class="transition-transform duration-300 hover:scale-[1.02]">
+            <div id="no-habits-message" class="hidden text-center py-12 text-slate-500">
+              <p class="text-lg font-medium">No habit data available yet</p>
+              <p class="text-sm mt-2">Add more daily entries to see habit correlations!</p>
+            </div>
+          </div>
         </div>
       </div>
 
       <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 class="mb-2 text-2xl font-bold text-slate-900">Weekly pattern heatmap</h2>
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-2xl font-bold text-slate-900">Weekly Habit Patterns</h2>
+          <div id="loading-patterns" class="w-3 h-3 bg-amber-500 rounded-full animate-pulse"></div>
+        </div>
         <p class="mb-5 text-slate-600">
-          A heatmap-style overview to reveal patterns across the week.
+          Discover your weekly patterns in caffeine consumption, activity levels, and screen time usage.
         </p>
-        <div id="chart-heatmap"></div>
+        <div id="patterns-chart" class="transition-transform duration-300 hover:scale-[1.02]">
+          <div id="no-patterns-message" class="hidden text-center py-12 text-slate-500">
+            <p class="text-lg font-medium">No pattern data available yet</p>
+            <p class="text-sm mt-2">Track your habits for a full week to see patterns!</p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
   <script type="module">
     import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+    import { supabase } from "../../utils/supabase";
 
-    const sleepData = [
-      { day: "Mon", weekend: "Weekday", deepSleep: 1.5, caffeineAfter3: "No", steps: 8200, screenTime: 3.2, phoneTime: 22.1, score: 4 },
-      { day: "Tue", weekend: "Weekday", deepSleep: 1.2, caffeineAfter3: "Yes", steps: 5400, screenTime: 5.6, phoneTime: 23.4, score: 2 },
-      { day: "Wed", weekend: "Weekday", deepSleep: 1.9, caffeineAfter3: "No", steps: 9100, screenTime: 2.8, phoneTime: 21.8, score: 5 },
-      { day: "Thu", weekend: "Weekday", deepSleep: 1.4, caffeineAfter3: "Yes", steps: 6700, screenTime: 4.8, phoneTime: 23.1, score: 3 },
-      { day: "Fri", weekend: "Weekday", deepSleep: 1.0, caffeineAfter3: "Yes", steps: 4300, screenTime: 6.1, phoneTime: 23.8, score: 2 },
-      { day: "Sat", weekend: "Weekend", deepSleep: 2.1, caffeineAfter3: "No", steps: 10300, screenTime: 3.9, phoneTime: 22.7, score: 5 },
-      { day: "Sun", weekend: "Weekend", deepSleep: 1.8, caffeineAfter3: "No", steps: 8700, screenTime: 3.4, phoneTime: 22.0, score: 4 }
-    ];
+    // Fetch real sleep and habit data from Supabase
+    async function fetchSleepData() {
+      try {
+        const { data: rawData, error } = await supabase
+          .from("Data")
+          .select("*")
+          .order("date", { ascending: true })
+          .limit(30); // Get last 30 days
 
-    const heatmapData = [
-      { habit: "Caffeine after 3 PM", day: "Mon", value: 1 },
-      { habit: "Caffeine after 3 PM", day: "Tue", value: 0 },
-      { habit: "Caffeine after 3 PM", day: "Wed", value: 1 },
-      { habit: "Caffeine after 3 PM", day: "Thu", value: 0 },
-      { habit: "Caffeine after 3 PM", day: "Fri", value: 0 },
-      { habit: "Caffeine after 3 PM", day: "Sat", value: 1 },
-      { habit: "Caffeine after 3 PM", day: "Sun", value: 1 },
+        if (error) {
+          console.error("Error fetching data:", error);
+          return [];
+        }
 
-      { habit: "High activity", day: "Mon", value: 1 },
-      { habit: "High activity", day: "Tue", value: 0 },
-      { habit: "High activity", day: "Wed", value: 1 },
-      { habit: "High activity", day: "Thu", value: 0 },
-      { habit: "High activity", day: "Fri", value: 0 },
-      { habit: "High activity", day: "Sat", value: 1 },
-      { habit: "High activity", day: "Sun", value: 1 },
+        return rawData.map(row => ({
+          date: new Date(row.date), // Parse as Date object
+          formattedDate: new Date(row.date).toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric' 
+          }),
+          dayOfWeek: new Date(row.date).toLocaleDateString('en-US', { weekday: 'short' }),
+          totalSleep: row.Total_sleep != null ? Number(row.Total_sleep) / 60 : 0, // Convert minutes to hours
+          deepSleep: row.Deep_sleep != null ? Number(row.Deep_sleep) / 60 : 0, // Convert minutes to hours
+          caffeineAfter3: row.Caffeine === 1 ? "Yes" : (row.Caffeine === 0 ? "No" : "Unknown"),
+          steps: row.Steps != null ? Number(row.Steps) : 0,
+          screenTime: row.Screen != null ? Number(row.Screen) / 60 : 0, // Convert minutes to hours
+          phoneTime: row.Last_phone_time || "Unknown",
+          sleepQuality: row.Sleep_quality || "Unknown"
+        }));
+      } catch (error) {
+        console.error("Error in fetchSleepData:", error);
+        return [];
+      }
+    }
 
-      { habit: "Low screen time", day: "Mon", value: 1 },
-      { habit: "Low screen time", day: "Tue", value: 0 },
-      { habit: "Low screen time", day: "Wed", value: 1 },
-      { habit: "Low screen time", day: "Thu", value: 0 },
-      { habit: "Low screen time", day: "Fri", value: 0 },
-      { habit: "Low screen time", day: "Sat", value: 1 },
-      { habit: "Low screen time", day: "Sun", value: 1 },
+    // Create line chart with sleep data
+    function createSleepChart(data) {
+      if (!data || data.length === 0) {
+        document.querySelector("#no-data-message")?.classList.remove('hidden');
+        document.querySelector("#loading-indicator")?.classList.add('hidden');
+        return;
+      }
 
-      { habit: "High deep sleep", day: "Mon", value: 1 },
-      { habit: "High deep sleep", day: "Tue", value: 0 },
-      { habit: "High deep sleep", day: "Wed", value: 1 },
-      { habit: "High deep sleep", day: "Thu", value: 0 },
-      { habit: "High deep sleep", day: "Fri", value: 0 },
-      { habit: "High deep sleep", day: "Sat", value: 1 },
-      { habit: "High deep sleep", day: "Sun", value: 1 }
-    ];
+      // Hide loading and no-data messages
+      document.querySelector("#loading-indicator")?.classList.add('hidden');
+      document.querySelector("#no-data-message")?.classList.add('hidden');
 
-    const commonStyles = {
-      style: {
-        background: "white",
-        color: "#0f172a",
-        fontSize: "14px"
-      },
-      marginLeft: 60,
-      marginBottom: 50,
-      width: 520,
-      height: 320
-    };
+      // Prepare data for plotting (both total sleep and deep sleep)
+      const totalSleepData = data.map(d => ({
+        x: d.date,
+        y: d.totalSleep,
+        date: d.formattedDate,
+        type: "Total Sleep"
+      }));
 
-    const deepSleepChart = Plot.plot({
-      ...commonStyles,
-      y: { grid: true, label: "Hours" },
-      x: { label: "Day" },
-      marks: [
-        Plot.barY(sleepData, { x: "day", y: "deepSleep", fill: "#0ea5e9", rx: 8 }),
-        Plot.ruleY([0])
-      ]
+      const deepSleepData = data.map(d => ({
+        x: d.date,
+        y: d.deepSleep,
+        date: d.formattedDate,
+        type: "Deep Sleep"
+      }));
+
+      const chartData = [...totalSleepData, ...deepSleepData];
+
+      const chart = Plot.plot({
+        width: Math.min(window.innerWidth - 100, 1000),
+        height: 400,
+        style: {
+          background: "white",
+          color: "#0f172a",
+          fontSize: "14px"
+        },
+        marginLeft: 60,
+        marginRight: 30,
+        marginTop: 20,
+        marginBottom: 60,
+        x: {
+          type: "time",
+          label: "Date",
+          tickRotate: -45,
+          ticks: data.length > 10 ? Math.ceil(data.length / 5) : data.length
+        },
+        y: {
+          grid: true,
+          label: "Hours",
+          domain: [0, Math.max(...data.map(d => Math.max(d.totalSleep, d.deepSleep))) + 1]
+        },
+        color: {
+          legend: true,
+          domain: ["Total Sleep", "Deep Sleep"],
+          range: ["#3b82f6", "#10b981"]
+        },
+        marks: [
+          // Total sleep line
+          Plot.line(totalSleepData, {
+            x: "x",
+            y: "y",
+            stroke: "#3b82f6",
+            strokeWidth: 3,
+            tip: true,
+            title: (d) => `${d.date}: Total Sleep ${d.y.toFixed(1)}h`
+          }),
+          // Deep sleep line
+          Plot.line(deepSleepData, {
+            x: "x",
+            y: "y",
+            stroke: "#10b981",
+            strokeWidth: 3,
+            tip: true,
+            title: (d) => `${d.date}: Deep Sleep ${d.y.toFixed(1)}h`
+          }),
+          // Total sleep dots
+          Plot.dot(totalSleepData, {
+            x: "x",
+            y: "y",
+            fill: "#3b82f6",
+            r: 4,
+            stroke: "white",
+            strokeWidth: 2,
+            tip: true,
+            title: (d) => `${d.date}: Total Sleep ${d.y.toFixed(1)}h`
+          }),
+          // Deep sleep dots
+          Plot.dot(deepSleepData, {
+            x: "x",
+            y: "y",
+            fill: "#10b981",
+            r: 4,
+            stroke: "white",
+            strokeWidth: 2,
+            tip: true,
+            title: (d) => `${d.date}: Deep Sleep ${d.y.toFixed(1)}h`
+          }),
+          // Zero line
+          Plot.ruleY([0])
+        ]
+      });
+
+      document.querySelector("#sleep-chart")?.append(chart);
+    }
+
+    // Create habit correlation chart
+    function createHabitsChart(data) {
+      if (!data || data.length === 0) {
+        document.querySelector("#no-habits-message")?.classList.remove('hidden');
+        document.querySelector("#loading-habits")?.classList.add('hidden');
+        return;
+      }
+
+      document.querySelector("#loading-habits")?.classList.add('hidden');
+      document.querySelector("#no-habits-message")?.classList.add('hidden');
+
+      // Filter data for valid entries
+      const validData = data.filter(d => d.deepSleep > 0);
+      
+      if (validData.length === 0) {
+        document.querySelector("#no-habits-message")?.classList.remove('hidden');
+        return;
+      }
+
+      // Prepare data for different habit correlations
+      const caffeineData = validData
+        .filter(d => d.caffeineAfter3 !== "Unknown")
+        .map(d => ({
+          x: d.caffeineAfter3 === "Yes" ? 1 : 2,
+          y: d.deepSleep,
+          type: "caffeine",
+          date: d.formattedDate,
+          details: `${d.caffeineAfter3} caffeine, ${d.deepSleep.toFixed(1)}h deep sleep`
+        }));
+
+      const stepsData = validData
+        .filter(d => d.steps > 0)
+        .map(d => ({
+          x: 3 + (d.steps / 10000), // Normalize steps
+          y: d.deepSleep,
+          type: "steps",
+          date: d.formattedDate,
+          details: `${d.steps.toLocaleString()} steps, ${d.deepSleep.toFixed(1)}h deep sleep`
+        }));
+
+      const screenData = validData
+        .filter(d => d.screenTime > 0)
+        .map(d => ({
+          x: 5 - (d.screenTime / 8), // Inverse: less screen time = better position
+          y: d.deepSleep,
+          type: "screen",
+          date: d.formattedDate,
+          details: `${d.screenTime.toFixed(1)}h screen time, ${d.deepSleep.toFixed(1)}h deep sleep`
+        }));
+
+      const allHabitData = [...caffeineData, ...stepsData, ...screenData];
+
+      if (allHabitData.length === 0) {
+        document.querySelector("#no-habits-message")?.classList.remove('hidden');
+        return;
+      }
+
+      const chart = Plot.plot({
+        width: Math.min(window.innerWidth - 100, 500),
+        height: 400,
+        style: {
+          background: "white",
+          color: "#0f172a",
+          fontSize: "14px"
+        },
+        marginLeft: 60,
+        marginRight: 30,
+        marginBottom: 60,
+        marginTop: 20,
+        y: {
+          grid: true,
+          label: "Deep Sleep (hours)",
+          domain: [0, Math.max(...validData.map(d => d.deepSleep)) + 0.5]
+        },
+        x: {
+          label: "",
+          domain: [0.5, 5.5],
+          ticks: [1, 2, 3, 4, 5],
+          tickFormat: d => {
+            const labels = {1: "Caf Yes", 2: "Caf No", 3: "Steps", 4: "Screen", 5: "Low Screen"};
+            return labels[d] || "";
+          }
+        },
+        marks: [
+          Plot.dot(allHabitData, {
+            x: "x",
+            y: "y",
+            fill: (d) => d.type === "caffeine" ? "#f59e0b" : d.type === "steps" ? "#10b981" : "#ef4444",
+            r: 6,
+            tip: true,
+            title: (d) => `${d.date}: ${d.details}`
+          }),
+          Plot.ruleY([0])
+        ]
+      });
+
+      document.querySelector("#habits-chart")?.append(chart);
+    }
+
+    // Create weekly patterns chart
+    function createPatternsChart(data) {
+      if (!data || data.length === 0) {
+        document.querySelector("#no-patterns-message")?.classList.remove('hidden');
+        document.querySelector("#loading-patterns")?.classList.add('hidden');
+        return;
+      }
+
+      document.querySelector("#loading-patterns")?.classList.add('hidden');
+      document.querySelector("#no-patterns-message")?.classList.add('hidden');
+
+      const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+      
+      // Calculate averages for each day
+      const patternsData = [];
+      daysOfWeek.forEach(day => {
+        const dayData = data.filter(d => d.dayOfWeek === day);
+        if (dayData.length > 0) {
+          patternsData.push({
+            day: day,
+            caffeineRate: dayData.filter(d => d.caffeineAfter3 === "Yes").length / dayData.length,
+            avgSteps: dayData.reduce((sum, d) => sum + d.steps, 0) / dayData.length,
+            avgScreenTime: dayData.reduce((sum, d) => sum + d.screenTime, 0) / dayData.length,
+            avgDeepSleep: dayData.reduce((sum, d) => sum + d.deepSleep, 0) / dayData.length
+          });
+        }
+      });
+
+      if (patternsData.length === 0) {
+        document.querySelector("#no-patterns-message")?.classList.remove('hidden');
+        return;
+      }
+
+      // Prepare data for each metric
+      const caffeineLineData = patternsData.map(d => ({
+        x: d.day,
+        y: d.caffeineRate,
+        metric: "Caffeine Rate",
+        value: `${(d.caffeineRate * 100).toFixed(0)}%`
+      }));
+
+      const stepsLineData = patternsData.map(d => ({
+        x: d.day,
+        y: d.avgSteps / 1000, // Convert to thousands
+        metric: "Steps",
+        value: `${d.avgSteps.toFixed(0)} steps`
+      }));
+
+      const screenLineData = patternsData.map(d => ({
+        x: d.day,
+        y: d.avgScreenTime,
+        metric: "Screen Time",
+        value: `${d.avgScreenTime.toFixed(1)}h`
+      }));
+
+      const sleepLineData = patternsData.map(d => ({
+        x: d.day,
+        y: d.avgDeepSleep,
+        metric: "Deep Sleep",
+        value: `${d.avgDeepSleep.toFixed(1)}h`
+      }));
+
+      const allLineData = [...caffeineLineData, ...stepsLineData, ...screenLineData, ...sleepLineData];
+
+      const chart = Plot.plot({
+        width: Math.min(window.innerWidth - 100, 800),
+        height: 350,
+        style: {
+          background: "white",
+          color: "#0f172a",
+          fontSize: "14px"
+        },
+        marginLeft: 60,
+        marginRight: 30,
+        marginBottom: 60,
+        marginTop: 20,
+        x: {
+          label: "Day of Week"
+        },
+        y: {
+          grid: true,
+          label: "Average Value"
+        },
+        color: {
+          legend: true,
+          domain: ["Caffeine Rate", "Steps", "Screen Time", "Deep Sleep"],
+          range: ["#f59e0b", "#10b981", "#ef4444", "#3b82f6"]
+        },
+        marks: [
+          Plot.line(allLineData, {
+            x: "x",
+            y: "y",
+            stroke: "metric",
+            strokeWidth: 2,
+            tip: true,
+            title: (d) => `${d.x}: ${d.metric} ${d.value}`
+          }),
+          Plot.dot(allLineData, {
+            x: "x",
+            y: "y",
+            fill: "metric",
+            r: 4,
+            stroke: "white",
+            strokeWidth: 1,
+            tip: true,
+            title: (d) => `${d.x}: ${d.metric} ${d.value}`
+          })
+        ]
+      });
+
+      document.querySelector("#patterns-chart")?.append(chart);
+    }
+
+    // Load and render all data
+    const sleepData = await fetchSleepData();
+    console.log("Fetched sleep data:", sleepData); // Debug log
+    
+    createSleepChart(sleepData);
+    createHabitsChart(sleepData);
+    createPatternsChart(sleepData);
+
+    // Handle window resize
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        document.querySelector("#sleep-chart").innerHTML = '';
+        document.querySelector("#habits-chart").innerHTML = '';
+        document.querySelector("#patterns-chart").innerHTML = '';
+        createSleepChart(sleepData);
+        createHabitsChart(sleepData);
+        createPatternsChart(sleepData);
+      }, 250);
     });
-
-    document.querySelector("#chart-deep-sleep")?.append(deepSleepChart);
-
-    const caffeineChart = Plot.plot({
-      ...commonStyles,
-      y: { grid: true, label: "Deep sleep (hours)" },
-      x: { label: "Caffeine after 3 PM" },
-      marks: [
-        Plot.dot(sleepData, {
-          x: "caffeineAfter3",
-          y: "deepSleep",
-          fill: "caffeineAfter3",
-          r: 8,
-          tip: true
-        }),
-        Plot.ruleY([0])
-      ]
-    });
-
-    document.querySelector("#chart-caffeine")?.append(caffeineChart);
-
-    const weekdayWeekendChart = Plot.plot({
-      ...commonStyles,
-      y: { grid: true, label: "Average deep sleep (hours)" },
-      x: { label: "" },
-      marks: [
-        Plot.barY(
-          sleepData,
-          Plot.groupX(
-            { y: "mean" },
-            { x: "weekend", y: "deepSleep", fill: "weekend", rx: 8 }
-          )
-        ),
-        Plot.ruleY([0])
-      ]
-    });
-
-    document.querySelector("#chart-weekday-weekend")?.append(weekdayWeekendChart);
-
-    const stepsChart = Plot.plot({
-      ...commonStyles,
-      x: { grid: true, label: "Steps" },
-      y: { grid: true, label: "Deep sleep (hours)" },
-      marks: [
-        Plot.dot(sleepData, {
-          x: "steps",
-          y: "deepSleep",
-          fill: "#10b981",
-          r: 8,
-          tip: true
-        }),
-        Plot.ruleY([0])
-      ]
-    });
-
-    document.querySelector("#chart-steps")?.append(stepsChart);
-
-    const heatmapChart = Plot.plot({
-      marginLeft: 140,
-      marginBottom: 50,
-      width: 1100,
-      height: 360,
-      style: {
-        background: "white",
-        color: "#0f172a",
-        fontSize: "14px"
-      },
-      color: {
-        scheme: "Blues",
-        legend: true,
-        label: "Pattern strength"
-      },
-      x: { label: "Day of week" },
-      y: { label: "" },
-      marks: [
-        Plot.cell(heatmapData, {
-          x: "day",
-          y: "habit",
-          fill: "value",
-          inset: 1
-        }),
-        Plot.text(heatmapData, {
-          x: "day",
-          y: "habit",
-          text: (d) => d.value === 1 ? "High" : "Low",
-          fill: "#0f172a"
-        })
-      ]
-    });
-
-    document.querySelector("#chart-heatmap")?.append(heatmapChart);
   </script>
 </Layout>
