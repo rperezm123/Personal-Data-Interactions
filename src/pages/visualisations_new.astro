@@ -608,8 +608,12 @@ import "../styles/global.css";
       <div class="full-width">
         <div class="card">
           <div class="section-label">Chart 06</div>
-          <div class="card-title">Last phone use time</div>
-          <p class="card-desc">When did you last use your phone before bed? Earlier is better for sleep quality.</p>
+          <div class="card-title" id="phone-chart-title">Last phone use time</div>
+          <p class="card-desc" id="phone-chart-desc">When did you last use your phone before bed? Earlier is better for sleep quality.</p>
+          <div class="chart-controls" id="phone-controls">
+            <button class="control-btn active" data-phone-metric="phone">Phone Time</button>
+            <button class="control-btn" data-phone-metric="steps">Steps</button>
+          </div>
           <div class="chart-wrap" id="wrap-phone">
             <div class="chart-loader" id="load-phone">
               <div class="loader-dot"></div><div class="loader-dot"></div><div class="loader-dot"></div>
@@ -796,21 +800,26 @@ function renderDeepBar(data) {
 
   // Sort by date
   const sortedValid = [...valid].sort((a, b) => a.date - b.date);
-  const barData = sortedValid.map(d => ({ 
-    x: d.date, 
-    y: currentDeepMetric === 'deep' ? d.deepSleep : d.totalSleep, 
-    label: d.label 
+  const barData = sortedValid.map(d => ({
+    x: d.date,
+    y: currentDeepMetric === 'deep' ? d.deepSleep : d.totalSleep,
+    label: d.label
   }));
   const avg = barData.reduce((s,d) => s + d.y, 0) / barData.length;
   const w = Math.min($('chart-deep').parentElement.offsetWidth - 40, 500);
+
+  const metricLabel = currentDeepMetric === 'deep' ? 'deep sleep' : 'total sleep';
+  const fillColor = currentDeepMetric === 'deep'
+    ? (d => d.y >= 2 ? GREEN : d.y >= 1.2 ? AMBER : RED)
+    : (d => d.y >= 7 ? GREEN : d.y >= 5 ? AMBER : RED);
 
   const chart = Plot.plot({
     width: w, height: 270,
     style: plotStyle,
     marginLeft: 48, marginRight: 10, marginTop: 10,
     marginBottom: valid.length > 8 ? 68 : 52,
-    x: { 
-      label: null, 
+    x: {
+      label: null,
       tickRotate: -45,
       tickFormat: d => d.toLocaleDateString('en-GB', { day:'numeric', month:'short' })
     },
@@ -823,9 +832,9 @@ function renderDeepBar(data) {
       Plot.ruleY([0], { stroke: 'rgba(255,255,255,0.08)' }),
       Plot.barY(barData, {
         x: 'x', y: 'y',
-        fill: d => d.y >= 2 ? GREEN : d.y >= 1.2 ? AMBER : RED,
+        fill: fillColor,
         rx: 5, tip: true,
-        title: d => `${d.label}: ${d.y.toFixed(1)}h deep sleep`
+        title: d => `${d.label}: ${d.y.toFixed(1)}h ${metricLabel}`
       }),
       Plot.ruleY([avg], { stroke: GREEN, strokeDasharray: '4,3', strokeOpacity: 0.5 }),
     ]
@@ -845,7 +854,7 @@ function renderDeepBar(data) {
   const wrap = $('chart-deep');
   wrap.innerHTML = '';
   const lbl = document.createElement('div');
-  lbl.textContent = '↑ Deep sleep (h)';
+  lbl.textContent = currentDeepMetric === 'deep' ? '↑ Deep sleep (h)' : '↑ Total sleep (h)';
   lbl.style.cssText = `font-family:'DM Mono',monospace;font-size:11px;color:${MUTED};margin-bottom:4px;padding-left:4px;`;
   wrap.appendChild(lbl);
   wrap.appendChild(chart);
@@ -942,96 +951,158 @@ function renderDeepBar(data) {
 }
 
     /* ─── Chart 06: Last phone time ─── */
+    let currentPhoneMetric = 'phone';
+
     function renderPhoneTime(data) {
-      const valid = data.filter(d => d.lastPhoneTime != null && d.lastPhoneTime !== 'Unknown');
-      done('load-phone','empty-phone', valid.length > 0);
-      if (!valid.length) return;
+      if (currentPhoneMetric === 'phone') {
+        const valid = data.filter(d => d.lastPhoneTime != null && d.lastPhoneTime !== 'Unknown');
+        done('load-phone','empty-phone', valid.length > 0);
+        if (!valid.length) return;
 
-      // Parse time strings to hours (e.g., "10:30 PM" -> 22.5)
-      const parsedData = valid.map(d => {
-        const timeStr = d.lastPhoneTime;
-        let hours = 0;
-        
-        if (timeStr.includes('AM') || timeStr.includes('PM')) {
-          const [time, period] = timeStr.split(' ');
-          const [h, m] = time.split(':').map(Number);
-          hours = h % 12 + (period === 'PM' ? 12 : 0) + m / 60;
-        } else {
-          // Try parsing as 24h format
-          const [h, m] = timeStr.split(':').map(Number);
-          hours = h + m / 60;
-        }
-        
-        // Adjust for 19:00-04:00 range (add 24 hours if before 19:00)
-        if (hours < 19) {
-          hours += 24;
-        }
-        
-        // Convert to 24-hour format for display
-        const h = Math.floor(hours) % 24;
-        const m = Math.round((hours - Math.floor(hours)) * 60);
-        const time24 = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
-        
-        return {
-          x: d.date,
-          y: hours,
-          label: d.label,
-          timeStr: time24
-        };
-      });
+        // Parse time strings to hours (e.g., "10:30 PM" -> 22.5)
+        const parsedData = valid.map(d => {
+          const timeStr = d.lastPhoneTime;
+          let hours = 0;
 
-      const w = Math.min($('chart-phone').parentElement.offsetWidth - 40, 1000);
+          if (timeStr.includes('AM') || timeStr.includes('PM')) {
+            const [time, period] = timeStr.split(' ');
+            const [h, m] = time.split(':').map(Number);
+            hours = h % 12 + (period === 'PM' ? 12 : 0) + m / 60;
+          } else {
+            // Try parsing as 24h format
+            const [h, m] = timeStr.split(':').map(Number);
+            hours = h + m / 60;
+          }
 
-      const chart = Plot.plot({
-        width: w, height: 280,
-        style: plotStyle,
-        marginLeft: 75, marginRight: 20, marginTop: 16, marginBottom: 50,
-        x: { 
-          type: 'time',
-          label: null,
-          tickFormat: d => d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}),
-          tickRotate: -40
-        },
-        y: {
-          grid: true,
-          label: null,
-          domain: [19, 28],
-          tickFormat: d => {
-            const h = Math.floor(d) % 24;
-            const m = Math.round((d - Math.floor(d)) * 60);
-            return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+          // Adjust for 19:00-04:00 range (add 24 hours if before 19:00)
+          if (hours < 19) {
+            hours += 24;
+          }
+
+          // Convert to 24-hour format for display
+          const h = Math.floor(hours) % 24;
+          const m = Math.round((hours - Math.floor(hours)) * 60);
+          const time24 = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+
+          return {
+            x: d.date,
+            y: hours,
+            label: d.label,
+            timeStr: time24
+          };
+        });
+
+        const w = Math.min($('chart-phone').parentElement.offsetWidth - 40, 1000);
+
+        const chart = Plot.plot({
+          width: w, height: 280,
+          style: plotStyle,
+          marginLeft: 75, marginRight: 20, marginTop: 16, marginBottom: 50,
+          x: {
+            type: 'time',
+            label: null,
+            tickFormat: d => d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}),
+            tickRotate: -40
           },
-          gridColor: 'rgba(255,255,255,0.06)'
-        },
-        marks: [
-          Plot.ruleY([0], { stroke: 'rgba(255,255,255,0.08)' }),
-          Plot.dot(parsedData, {
-            x: 'x',
-            y: 'y',
-            fill: PURPLE,
-            r: 5,
-            stroke: '#141920',
-            strokeWidth: 2,
-            tip: true,
-            title: d => `${d.label}: ${d.timeStr}`
-          }),
-          Plot.line(parsedData, {
-            x: 'x',
-            y: 'y',
-            stroke: PURPLE,
-            strokeWidth: 2,
-            strokeOpacity: 0.5
-          })
-        ]
-      });
+          y: {
+            grid: true,
+            label: null,
+            domain: [19, 28],
+            tickFormat: d => {
+              const h = Math.floor(d) % 24;
+              const m = Math.round((d - Math.floor(d)) * 60);
+              return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+            },
+            gridColor: 'rgba(255,255,255,0.06)'
+          },
+          marks: [
+            Plot.ruleY([0], { stroke: 'rgba(255,255,255,0.08)' }),
+            Plot.dot(parsedData, {
+              x: 'x',
+              y: 'y',
+              fill: PURPLE,
+              r: 5,
+              stroke: '#141920',
+              strokeWidth: 2,
+              tip: true,
+              title: d => `${d.label}: ${d.timeStr}`
+            }),
+            Plot.line(parsedData, {
+              x: 'x',
+              y: 'y',
+              stroke: PURPLE,
+              strokeWidth: 2,
+              strokeOpacity: 0.5
+            })
+          ]
+        });
 
-      const wrap = $('chart-phone');
-      wrap.innerHTML = '';
-      const lbl = document.createElement('div');
-      lbl.textContent = '↑ Time of day';
-      lbl.style.cssText = `font-family:'DM Mono',monospace;font-size:11px;color:${MUTED};margin-bottom:4px;padding-left:4px;`;
-      wrap.appendChild(lbl);
-      wrap.appendChild(chart);
+        const wrap = $('chart-phone');
+        wrap.innerHTML = '';
+        const lbl = document.createElement('div');
+        lbl.textContent = '↑ Time of day';
+        lbl.style.cssText = `font-family:'DM Mono',monospace;font-size:11px;color:${MUTED};margin-bottom:4px;padding-left:4px;`;
+        wrap.appendChild(lbl);
+        wrap.appendChild(chart);
+      } else {
+        // Steps visualization
+        const valid = data.filter(d => d.steps != null && d.steps > 0);
+        done('load-phone','empty-phone', valid.length > 0);
+        if (!valid.length) return;
+
+        const stepData = valid.map(d => ({
+          x: d.date,
+          y: d.steps,
+          label: d.label
+        }));
+
+        const w = Math.min($('chart-phone').parentElement.offsetWidth - 40, 1000);
+
+        const chart = Plot.plot({
+          width: w, height: 280,
+          style: plotStyle,
+          marginLeft: 60, marginRight: 20, marginTop: 16, marginBottom: 50,
+          x: {
+            type: 'time',
+            label: null,
+            tickFormat: d => d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}),
+            tickRotate: -40
+          },
+          y: {
+            grid: true,
+            label: null,
+            gridColor: 'rgba(255,255,255,0.06)',
+          },
+          marks: [
+            Plot.ruleY([0], { stroke: 'rgba(255,255,255,0.08)' }),
+            Plot.dot(stepData, {
+              x: 'x',
+              y: 'y',
+              fill: PURPLE,
+              r: 5,
+              stroke: '#141920',
+              strokeWidth: 2,
+              tip: true,
+              title: d => `${d.label}: ${d.y.toLocaleString()} steps`
+            }),
+            Plot.line(stepData, {
+              x: 'x',
+              y: 'y',
+              stroke: PURPLE,
+              strokeWidth: 2,
+              strokeOpacity: 0.5
+            })
+          ]
+        });
+
+        const wrap = $('chart-phone');
+        wrap.innerHTML = '';
+        const lbl = document.createElement('div');
+        lbl.textContent = '↑ Steps';
+        lbl.style.cssText = `font-family:'DM Mono',monospace;font-size:11px;color:${MUTED};margin-bottom:4px;padding-left:4px;`;
+        wrap.appendChild(lbl);
+        wrap.appendChild(chart);
+      }
     }
 
     /* ─── Chart 05: Screen time scatter ─── */
@@ -1356,16 +1427,49 @@ function renderDOW(data) {
         if (e.target.classList.contains('control-btn')) {
           const trend = e.target.dataset.trend;
           showScreenTrend = trend === 'show';
-          
+
           // Update active state
           screenControls.querySelectorAll('.control-btn').forEach(btn => {
             btn.classList.remove('active');
           });
           e.target.classList.add('active');
-          
+
           // Re-render
           $('chart-screen').innerHTML = '';
           renderScreen(data);
+        }
+      });
+    }
+
+    // Chart 6 metric toggle handlers (phone time vs steps)
+    const phoneControls = $('phone-controls');
+    if (phoneControls) {
+      phoneControls.addEventListener('click', (e) => {
+        const btn = e.target.closest('.control-btn');
+        if (btn) {
+          const metric = btn.dataset.phoneMetric;
+          currentPhoneMetric = metric;
+
+          // Update active state
+          phoneControls.querySelectorAll('.control-btn').forEach(b => {
+            b.classList.remove('active');
+          });
+          btn.classList.add('active');
+
+          // Update title and description
+          const titleEl = $('phone-chart-title');
+          const descEl = $('phone-chart-desc');
+          if (metric === 'phone') {
+            titleEl.textContent = 'Last phone use time';
+            descEl.textContent = 'When did you last use your phone before bed? Earlier is better for sleep quality.';
+          } else {
+            titleEl.textContent = 'Steps over time';
+            descEl.textContent = 'Track your daily step count to see patterns in your activity levels.';
+          }
+
+          // Re-render with new metric
+          $('chart-phone').innerHTML = '';
+          renderPhoneTime(data);
         }
       });
     }
