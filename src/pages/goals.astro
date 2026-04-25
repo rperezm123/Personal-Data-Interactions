@@ -25,10 +25,11 @@ import "../styles/global.css";
         <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
           <h2 class="mb-6 text-2xl font-bold text-slate-900">Create your own goal</h2>
 
-          <form class="grid gap-6">
+          <form id="goal-form" class="grid gap-6">
             <div>
               <label class="mb-2 block font-semibold text-slate-800">Goal title</label>
               <input
+                id="goal-title"
                 type="text"
                 placeholder="e.g. No caffeine after 3 PM"
                 class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500"
@@ -38,6 +39,7 @@ import "../styles/global.css";
             <div>
               <label class="mb-2 block font-semibold text-slate-800">Why do you want this goal?</label>
               <textarea
+                id="goal-why"
                 rows="4"
                 placeholder="e.g. I think late coffee is reducing my deep sleep."
                 class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500"
@@ -47,7 +49,7 @@ import "../styles/global.css";
             <div class="grid gap-5 md:grid-cols-2">
               <div>
                 <label class="mb-2 block font-semibold text-slate-800">Category</label>
-                <select class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500">
+                <select id="goal-category" class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500">
                   <option value="">Select category</option>
                   <option value="caffeine">Caffeine</option>
                   <option value="screen-time">Screen time</option>
@@ -59,19 +61,21 @@ import "../styles/global.css";
 
               <div>
                 <label class="mb-2 block font-semibold text-slate-800">Target duration</label>
-                <select class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500">
+                <select id="goal-duration" class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500">
                   <option value="">Select duration</option>
                   <option value="3days">3 days</option>
                   <option value="1week">1 week</option>
                   <option value="2weeks">2 weeks</option>
                   <option value="1month">1 month</option>
+                  <option value="3months">3 months</option>
+                  <option value="6months">6 months</option>
                 </select>
               </div>
             </div>
 
             <div>
               <label class="mb-2 block font-semibold text-slate-800">Reminder preference</label>
-              <select class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500">
+              <select id="goal-reminder" class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500">
                 <option value="">Select reminder type</option>
                 <option value="none">No reminder</option>
                 <option value="daily">Daily reminder</option>
@@ -80,8 +84,10 @@ import "../styles/global.css";
               </select>
             </div>
 
+            <p id="goal-message" class="text-center text-sm font-medium"></p>
+
             <div class="flex flex-wrap gap-4 pt-2">
-              <MyButton name="Save Goal" />
+              <MyButton type="submit" name="Save Goal" />
               <a href="/dashboard">
                 <MyButton name="Back to Dashboard" />
               </a>
@@ -93,7 +99,7 @@ import "../styles/global.css";
           <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <h2 class="mb-4 text-2xl font-bold text-slate-900">Suggested goals</h2>
             <p class="mb-5 text-slate-600">
-              Suggestions can adapt to patterns detected in the user’s daily entries.
+              Suggestions can adapt to patterns detected in the user's daily entries.
             </p>
 
             <div class="flex flex-col gap-4">
@@ -142,4 +148,54 @@ import "../styles/global.css";
       </div>
     </div>
   </section>
+
+  <script>
+    import { supabase } from "../../utils/supabase";
+
+    const form    = document.getElementById("goal-form");
+    const message = document.getElementById("goal-message");
+
+    form?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const titleEl    = document.getElementById("goal-title");
+      const whyEl      = document.getElementById("goal-why");
+      const durationEl = document.getElementById("goal-duration");
+
+      const goal_title = titleEl instanceof HTMLInputElement     ? titleEl.value.trim()    : "";
+      const why        = whyEl instanceof HTMLTextAreaElement    ? whyEl.value.trim()      : "";
+      const duration   = durationEl instanceof HTMLSelectElement ? durationEl.value.trim() : "";
+
+      // Only goal_title is truly required — why and duration are optional in the schema
+      if (!goal_title) {
+        message!.className = "text-center text-sm font-medium text-red-600";
+        message!.textContent = "Please enter a goal title.";
+        return;
+      }
+
+      message!.className = "text-center text-sm font-medium text-slate-500";
+      message!.textContent = "Saving…";
+
+      const { error } = await supabase.from("Goals").insert([{
+        goal_title: goal_title       || null,
+        why:        why || null,
+        duration:   duration         || null,
+      }]);
+
+      if (error) {
+        console.error(error);
+        message!.className = "text-center text-sm font-medium text-red-600";
+        message!.textContent = error.message || "Could not save goal.";
+        return;
+      }
+
+      message!.className = "text-center text-sm font-medium text-emerald-600";
+      message!.textContent = "Goal saved!";
+      (form as HTMLFormElement).reset();
+
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 800);
+    });
+  </script>
 </Layout>

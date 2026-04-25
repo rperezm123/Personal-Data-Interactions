@@ -15,7 +15,7 @@ import "../styles/global.css";
           New Day Entry
         </h1>
         <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
-          Add today’s sleep and habit data to discover how your daily behavior affects deep sleep.
+          Add today's sleep and habit data to discover how your daily behavior affects deep sleep.
         </p>
       </div>
 
@@ -29,9 +29,34 @@ import "../styles/global.css";
                 <input id="date" type="date" class="w-full rounded-xl border border-slate-300 px-4 py-3" />
               </div>
 
+              <div class="flex items-end">
+                <div class="w-full">
+                  <label class="mb-2 block font-semibold text-slate-800">Auto-fill from Google Fit</label>
+                  <button
+                    id="fitLoginBtn"
+                    type="button"
+                    class="w-full rounded-xl border border-sky-300 bg-sky-50 px-4 py-3 text-sm font-semibold text-sky-700 transition hover:bg-sky-100"
+                  >
+                    1. Connect Google Fit
+                  </button>
+                </div>
+              </div>
+
+              <div class="md:col-span-2">
+                <button
+                  id="fitFetchBtn"
+                  type="button"
+                  disabled
+                  class="flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  2. Fetch Steps &amp; Sleep for Selected Date
+                </button>
+                <p id="fit-status" class="mt-2 text-center text-sm text-slate-500"></p>
+              </div>
+
               <div>
                 <label class="mb-2 block font-semibold text-slate-800">Total Sleep Hours</label>
-                <input id="totalSleep" type="number" step="0.5" min="0" max="24" placeholder="e.g. 7.5" class="w-full rounded-xl border border-slate-300 px-4 py-3" />
+                <input id="totalSleep" type="number" step="0.1" min="0" max="24" placeholder="e.g. 7.5" class="w-full rounded-xl border border-slate-300 px-4 py-3" />
               </div>
 
               <div>
@@ -100,131 +125,302 @@ import "../styles/global.css";
     </div>
   </section>
 
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <script type="module">
+    let accessToken = null;
+
+    const fitLoginBtn = document.getElementById("fitLoginBtn");
+    const fitFetchBtn = document.getElementById("fitFetchBtn");
+    const fitStatus   = document.getElementById("fit-status");
+    const dateInput   = document.getElementById("date");
+
+    function setStatus(msg, color = "text-slate-500") {
+      fitStatus.className = `mt-2 text-center text-sm ${color}`;
+      fitStatus.textContent = msg;
+    }
+
+    function updateFetchBtn() {
+      const hasDate  = dateInput instanceof HTMLInputElement && dateInput.value !== "";
+      fitFetchBtn.disabled = !(hasDate && accessToken);
+    }
+
+    dateInput?.addEventListener("change", updateFetchBtn);
+
+    window.addEventListener("load", () => {
+      const interval = setInterval(() => {
+        if (window.google?.accounts) {
+          clearInterval(interval);
+
+          const tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: "700516162297-v7k62thc9i25kbr94kjqf15ts0udkca2.apps.googleusercontent.com",
+            scope: [
+              "https://www.googleapis.com/auth/fitness.activity.read",
+              "https://www.googleapis.com/auth/fitness.body.read",
+              "https://www.googleapis.com/auth/fitness.sleep.read",
+            ].join(" "),
+            callback: (tokenResponse) => {
+              accessToken = tokenResponse.access_token;
+              fitLoginBtn.textContent = "✓ Connected to Google Fit";
+              setStatus("Connected! Select a date then click Fetch.", "text-emerald-600");
+              updateFetchBtn();
+            },
+          });
+
+          fitLoginBtn.addEventListener("click", () => tokenClient.requestAccessToken());
+        }
+      }, 100);
+    });
+
+    fitFetchBtn?.addEventListener("click", async () => {
+      if (!accessToken) return;
+      const dateVal = dateInput instanceof HTMLInputElement ? dateInput.value : "";
+      if (!dateVal) return;
+
+      setStatus("Fetching from Google Fit…");
+      fitFetchBtn.disabled = true;
+
+      const [year, month, day] = dateVal.split("-").map(Number);
+
+      // Day window: midnight to midnight of the selected date
+      const dayStart = new Date(year, month - 1, day, 0, 0, 0, 0);
+      const dayEnd   = new Date(year, month - 1, day, 23, 59, 59, 999);
+
+      // Sleep window: noon the day before → noon the day after
+      // This reliably captures any sleep session that overlaps the selected night
+      const sleepStart = new Date(year, month - 1, day - 1, 12, 0, 0, 0);
+      const sleepEnd   = new Date(year, month - 1, day + 1, 12, 0, 0, 0);
+
+      try {
+        // ── Steps: sum ALL points across ALL buckets ──────────────
+        // Google sometimes splits the day into multiple buckets (e.g. across
+        // a midnight boundary or data-source boundary). Summing all of them
+        // matches what the Google Fit app shows.
+        const stepsRes = await fetch(
+          "https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              aggregateBy: [{ dataTypeName: "com.google.step_count.delta" }],
+              bucketByTime: { durationMillis: 86400000 },
+              startTimeMillis: dayStart.getTime(),
+              endTimeMillis: dayEnd.getTime(),
+            }),
+          }
+        );
+        const stepsData = await stepsRes.json();
+
+        // Sum every intVal across every bucket and every point
+        let steps = 0;
+        for (const bucket of stepsData.bucket ?? []) {
+          for (const dataset of bucket.dataset ?? []) {
+            for (const point of dataset.point ?? []) {
+              steps += point.value?.[0]?.intVal ?? 0;
+            }
+          }
+        }
+
+        // ── Sleep: use the Sessions API, not just aggregate ───────
+        // The Sessions API returns actual recorded sleep sessions with
+        // proper start/end times — much more reliable than aggregate buckets.
+        // activityType=72 is "Sleep".
+        const sessionsRes = await fetch(
+          `https://www.googleapis.com/fitness/v1/users/me/sessions` +
+          `?startTime=${sleepStart.toISOString()}&endTime=${sleepEnd.toISOString()}&activityType=72`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        const sessionsData = await sessionsRes.json();
+        const sessions = sessionsData.session ?? [];
+
+        // Now fetch sleep segment detail for the same window so we can
+        // tally deep sleep from the stage breakdown.
+        const sleepSegRes = await fetch(
+          "https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              aggregateBy: [{ dataTypeName: "com.google.sleep.segment" }],
+              // Use a single large bucket to get all points back in one place
+              bucketByTime: { durationMillis: (sleepEnd - sleepStart) },
+              startTimeMillis: sleepStart.getTime(),
+              endTimeMillis: sleepEnd.getTime(),
+            }),
+          }
+        );
+        const sleepSegData = await sleepSegRes.json();
+
+        // Stage values: 4 = light sleep, 5 = deep sleep, 6 = REM, 2 = generic sleep
+        // 1 = awake (during sleep), 3 = out of bed — excluded from totals
+        const ASLEEP = new Set([2, 4, 5, 6]);
+        const DEEP   = new Set([5]);
+
+        let totalSleepMs = 0;
+        let deepSleepMs  = 0;
+
+        // Prefer segment data (gives stage breakdown)
+        const allPoints = [];
+        for (const bucket of sleepSegData.bucket ?? []) {
+          for (const dataset of bucket.dataset ?? []) {
+            for (const point of dataset.point ?? []) {
+              allPoints.push(point);
+            }
+          }
+        }
+
+        if (allPoints.length > 0) {
+          for (const point of allPoints) {
+            const stage = point.value?.[0]?.intVal;
+            const ms = (Number(point.endTimeNanos) - Number(point.startTimeNanos)) / 1e6;
+            if (ASLEEP.has(stage)) totalSleepMs += ms;
+            if (DEEP.has(stage))   deepSleepMs  += ms;
+          }
+        } else if (sessions.length > 0) {
+          // Fallback: no stage detail, use raw session duration
+          for (const s of sessions) {
+            totalSleepMs += Number(s.endTimeMillis) - Number(s.startTimeMillis);
+          }
+        }
+
+        // Round to 1 decimal hour
+        const toHours = (ms) => Math.round(ms / 360000) / 10;
+
+        // ── Fill fields ───────────────────────────────────────────
+        const stepsInput      = document.getElementById("steps");
+        const totalSleepInput = document.getElementById("totalSleep");
+        const deepSleepInput  = document.getElementById("deepSleep");
+
+        if (stepsInput instanceof HTMLInputElement)
+          stepsInput.value = steps > 0 ? String(steps) : "";
+
+        if (totalSleepInput instanceof HTMLInputElement)
+          totalSleepInput.value = totalSleepMs > 0 ? String(toHours(totalSleepMs)) : "";
+
+        if (deepSleepInput instanceof HTMLInputElement)
+          deepSleepInput.value = deepSleepMs > 0 ? String(toHours(deepSleepMs)) : "";
+
+        // ── Status message ────────────────────────────────────────
+        const parts = [];
+        if (steps > 0)        parts.push(`${steps.toLocaleString()} steps`);
+        if (totalSleepMs > 0) parts.push(`${toHours(totalSleepMs)}h sleep`);
+        if (deepSleepMs > 0)  parts.push(`${toHours(deepSleepMs)}h deep`);
+
+        setStatus(
+          parts.length > 0
+            ? `Filled: ${parts.join(" · ")}`
+            : "No data found for this date.",
+          parts.length > 0 ? "text-emerald-600" : "text-amber-600"
+        );
+
+      } catch (err) {
+        console.error(err);
+        setStatus("Fetch failed — check the browser console.", "text-red-600");
+      } finally {
+        updateFetchBtn();
+      }
+    });
+  </script>
+
   <script>
-  import { supabase } from "../../utils/supabase";
+    import { supabase } from "../../utils/supabase";
 
-  /**
-   * Matches `public."Data"`: date, "Total_sleep", "Deep_sleep", "Sleep_quality",
-   * "Caffeine", "Steps", "Screen" (all bigint except date/quality/time).
-   * Sleep + screen hours from the form are stored as whole minutes in bigint columns.
-   */
-  function formToDataRow() {
-    const dateEl = document.getElementById("date");
-    const totalSleepEl = document.getElementById("totalSleep");
-    const deepSleepEl = document.getElementById("deepSleep");
-    const sleepQualityEl = document.getElementById("sleepQuality");
-    const caffeineEl = document.getElementById("caffeineAfter3");
-    const stepsEl = document.getElementById("steps");
-    const screenTimeEl = document.getElementById("screenTime");
-    const lastPhoneEl = document.getElementById("lastPhoneUse");
+    function formToDataRow() {
+      const dateEl         = document.getElementById("date");
+      const totalSleepEl   = document.getElementById("totalSleep");
+      const deepSleepEl    = document.getElementById("deepSleep");
+      const sleepQualityEl = document.getElementById("sleepQuality");
+      const caffeineEl     = document.getElementById("caffeineAfter3");
+      const stepsEl        = document.getElementById("steps");
+      const screenTimeEl   = document.getElementById("screenTime");
+      const lastPhoneEl    = document.getElementById("lastPhoneUse");
 
-    const date = dateEl instanceof HTMLInputElement ? dateEl.value.trim() : "";
-    const totalSleepRaw = totalSleepEl instanceof HTMLInputElement ? totalSleepEl.value : "";
-    const deepSleepRaw = deepSleepEl instanceof HTMLInputElement ? deepSleepEl.value : "";
-    const sleepQuality =
-      sleepQualityEl instanceof HTMLSelectElement ? sleepQualityEl.value.trim() : "";
-    const caffeineAfter3 =
-      caffeineEl instanceof HTMLSelectElement ? caffeineEl.value.trim() : "";
-    const stepsRaw = stepsEl instanceof HTMLInputElement ? stepsEl.value : "";
-    const screenTimeRaw = screenTimeEl instanceof HTMLInputElement ? screenTimeEl.value : "";
-    const lastPhoneUse =
-      lastPhoneEl instanceof HTMLInputElement ? lastPhoneEl.value.trim() : "";
+      const date           = dateEl instanceof HTMLInputElement ? dateEl.value.trim() : "";
+      const totalSleepRaw  = totalSleepEl instanceof HTMLInputElement ? totalSleepEl.value : "";
+      const deepSleepRaw   = deepSleepEl instanceof HTMLInputElement ? deepSleepEl.value : "";
+      const sleepQuality   = sleepQualityEl instanceof HTMLSelectElement ? sleepQualityEl.value.trim() : "";
+      const caffeineAfter3 = caffeineEl instanceof HTMLSelectElement ? caffeineEl.value.trim() : "";
+      const stepsRaw       = stepsEl instanceof HTMLInputElement ? stepsEl.value : "";
+      const screenTimeRaw  = screenTimeEl instanceof HTMLInputElement ? screenTimeEl.value : "";
+      const lastPhoneUse   = lastPhoneEl instanceof HTMLInputElement ? lastPhoneEl.value.trim() : "";
 
-    /** Hours (possibly decimal) → integer minutes for bigint columns */
-    function hoursToMinutesOrNull(raw = "") {
-      if (raw === "") return null;
-      const n = Number(raw);
-      if (!Number.isFinite(n)) return null;
-      return Math.round(n * 60);
+      const hoursToMinutesOrNull = (raw = "") => {
+        if (raw === "") return null;
+        const n = Number(raw);
+        return Number.isFinite(n) ? Math.round(n * 60) : null;
+      };
+      const stepsOrNull = (raw = "") => {
+        if (raw === "") return null;
+        const n = Number(raw);
+        return Number.isFinite(n) ? Math.round(n) : null;
+      };
+      const caffeineOrNull = (v = "") => v === "Yes" ? 1 : v === "No" ? 0 : null;
+      const strOrNull      = (s = "") => s === "" ? null : s;
+
+      return {
+        date:            date || null,
+        Total_sleep:     hoursToMinutesOrNull(totalSleepRaw),
+        Deep_sleep:      hoursToMinutesOrNull(deepSleepRaw),
+        Sleep_quality:   strOrNull(sleepQuality),
+        Caffeine:        caffeineOrNull(caffeineAfter3),
+        Steps:           stepsOrNull(stepsRaw),
+        Screen:          hoursToMinutesOrNull(screenTimeRaw),
+        Last_phone_time: strOrNull(lastPhoneUse),
+      };
     }
 
-    function stepsOrNull(raw = "") {
-      if (raw === "") return null;
-      const n = Number(raw);
-      if (!Number.isFinite(n)) return null;
-      return Math.round(n);
-    }
+    const form    = document.getElementById("day-entry-form");
+    const message = document.getElementById("save-message");
 
-    function caffeineOrNull(yesNo = "") {
-      if (yesNo === "Yes") return 1;
-      if (yesNo === "No") return 0;
-      return null;
-    }
+    form?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!(form instanceof HTMLFormElement) || !(message instanceof HTMLParagraphElement)) return;
 
-    function strOrNull(s = "") {
-      return s === "" ? null : s;
-    }
-
-    return {
-      date: date || null,
-      Total_sleep: hoursToMinutesOrNull(totalSleepRaw),
-      Deep_sleep: hoursToMinutesOrNull(deepSleepRaw),
-      Sleep_quality: strOrNull(sleepQuality),
-      Caffeine: caffeineOrNull(caffeineAfter3),
-      Steps: stepsOrNull(stepsRaw),
-      Screen: hoursToMinutesOrNull(screenTimeRaw),
-      Last_phone_time: strOrNull(lastPhoneUse),
-    };
-  }
-
-  const form = document.getElementById("day-entry-form");
-  const message = document.getElementById("save-message");
-
-  form?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    if (!(form instanceof HTMLFormElement) || !(message instanceof HTMLParagraphElement)) return;
-
-    const row = formToDataRow();
-    if (!row.date) {
-      message.className = "text-center font-medium text-red-600";
-      message.textContent = "Please choose a date.";
-      return;
-    }
-
-    message.className = "text-center font-medium text-slate-600";
-    message.textContent = "Saving…";
-
-    const { data: existing, error: checkError } = await supabase
-      .from("Data")
-      .select("id")
-      .eq("date", row.date)
-      .limit(1);
-
-    if (checkError) {
-      console.error(checkError);
-      message.className = "text-center font-medium text-red-600";
-      message.textContent = checkError.message || "Could not verify this date.";
-      return;
-    }
-
-    if (existing && existing.length > 0) {
-      message.className = "text-center font-medium text-red-600";
-      message.textContent = "You already have an entry for this date. Pick another day or edit it in Supabase.";
-      return;
-    }
-
-    const { error } = await supabase.from("Data").insert([row]);
-
-    if (error) {
-      console.error(error);
-      message.className = "text-center font-medium text-red-600";
-      if (error.code === "23505") {
-        message.textContent = "An entry for this date already exists.";
+      const row = formToDataRow();
+      if (!row.date) {
+        message.className = "text-center font-medium text-red-600";
+        message.textContent = "Please choose a date.";
         return;
       }
-      message.textContent = error.message || "Could not save. Check table columns and RLS policies.";
-      return;
-    }
 
-    message.className = "text-center font-medium text-emerald-600";
-    message.textContent = "Entry saved successfully";
-    form.reset();
+      message.className = "text-center font-medium text-slate-600";
+      message.textContent = "Saving…";
 
-    setTimeout(() => {
-      window.location.href = "/visualisations";
-    }, 700);
-  });
-</script>
+      const { data: existing, error: checkError } = await supabase
+        .from("Data").select("id").eq("date", row.date).limit(1);
 
+      if (checkError) {
+        message.className = "text-center font-medium text-red-600";
+        message.textContent = checkError.message || "Could not verify this date.";
+        return;
+      }
 
+      if (existing && existing.length > 0) {
+        message.className = "text-center font-medium text-red-600";
+        message.textContent = "You already have an entry for this date.";
+        return;
+      }
+
+      const { error } = await supabase.from("Data").insert([row]);
+
+      if (error) {
+        message.className = "text-center font-medium text-red-600";
+        message.textContent = error.code === "23505"
+          ? "An entry for this date already exists."
+          : error.message || "Could not save.";
+        return;
+      }
+
+      message.className = "text-center font-medium text-emerald-600";
+      message.textContent = "Entry saved successfully";
+      form.reset();
+      setTimeout(() => { window.location.href = "/visualisations"; }, 700);
+    });
+  </script>
 </Layout>

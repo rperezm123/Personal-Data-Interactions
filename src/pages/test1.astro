@@ -1,0 +1,205 @@
+---
+// Astro page: src/pages/index.astro
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Google Fit API Test (Astro)</title>
+  </head>
+
+  <body>
+    <h1>Google Fit API Test (Astro)</h1>
+
+    <button id="loginBtn">Login with Google Fit</button>
+    <button id="getDataBtn">Get Yesterday's Steps & Sleep</button>
+
+    <pre id="output"></pre>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <script type="module">
+      let accessToken = null;
+      const output = document.getElementById("output");
+
+      function log(text) {
+        output.textContent = text;
+      }
+
+      // Sleep stage labels from Google Fit
+      const SLEEP_STAGES = {
+        1: "Awake (during sleep)",
+        2: "Sleep",
+        3: "Out of bed",
+        4: "Light sleep",
+        5: "Deep sleep",
+        6: "REM",
+      };
+
+      function formatDuration(ms) {
+        const totalMin = Math.round(ms / 60000);
+        const h = Math.floor(totalMin / 60);
+        const m = totalMin % 60;
+        return h > 0 ? `${h}h ${m}m` : `${m}m`;
+      }
+
+      function initGoogleAuth() {
+        const tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: "700516162297-v7k62thc9i25kbr94kjqf15ts0udkca2.apps.googleusercontent.com",
+          scope: [
+            "https://www.googleapis.com/auth/fitness.activity.read",
+            "https://www.googleapis.com/auth/fitness.body.read",
+            "https://www.googleapis.com/auth/fitness.sleep.read",
+          ].join(" "),
+          callback: (tokenResponse) => {
+            accessToken = tokenResponse.access_token;
+            log("Login successful. Access token received.");
+          },
+        });
+
+        document.getElementById("loginBtn").onclick = () => {
+          tokenClient.requestAccessToken();
+        };
+
+        document.getElementById("getDataBtn").onclick = async () => {
+          if (!accessToken) {
+            log("Please login first.");
+            return;
+          }
+
+          log("Fetching data...");
+
+          // Yesterday's time window
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+
+          const start = new Date(yesterday);
+          start.setHours(0, 0, 0, 0);
+
+          const end = new Date(yesterday);
+          end.setHours(23, 59, 59, 999);
+
+          const dateStr = start.toLocaleDateString(undefined, {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+
+          // --- Fetch Steps ---
+          const stepsRes = await fetch(
+            "https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate",
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                aggregateBy: [{ dataTypeName: "com.google.step_count.delta" }],
+                bucketByTime: { durationMillis: 86400000 },
+                startTimeMillis: start.getTime(),
+                endTimeMillis: end.getTime(),
+              }),
+            }
+          );
+          const stepsData = await stepsRes.json();
+          const steps =
+            stepsData.bucket?.[0]?.dataset?.[0]?.point?.[0]?.value?.[0]
+              ?.intVal ?? 0;
+
+          // --- Fetch Sleep ---
+          // Sleep sessions often start the evening before, so extend window back 12h
+          const sleepStart = new Date(start);
+          sleepStart.setHours(start.getHours() - 12);
+
+          const sleepRes = await fetch(
+            `https://www.googleapis.com/fitness/v1/users/me/sessions?startTime=${sleepStart.toISOString()}&endTime=${end.toISOString()}&activityType=72`,
+            {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            }
+          );
+          const sleepSessions = await sleepRes.json();
+
+          // Fetch detailed sleep segments (stages)
+          const sleepDataRes = await fetch(
+            "https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate",
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                aggregateBy: [{ dataTypeName: "com.google.sleep.segment" }],
+                bucketByTime: { durationMillis: 86400000 * 2 },
+                startTimeMillis: sleepStart.getTime(),
+                endTimeMillis: end.getTime(),
+              }),
+            }
+          );
+          const sleepData = await sleepDataRes.json();
+
+          // Tally up sleep stage durations
+          const stageTotals = {};
+          const points =
+            sleepData.bucket?.[0]?.dataset?.[0]?.point ?? [];
+
+          for (const point of points) {
+            const stageVal = point.value?.[0]?.intVal;
+            const label = SLEEP_STAGES[stageVal] ?? `Stage ${stageVal}`;
+            const durationMs =
+              (Number(point.endTimeNanos) - Number(point.startTimeNanos)) /
+              1e6;
+            stageTotals[label] = (stageTotals[label] ?? 0) + durationMs;
+          }
+
+          const totalSleepMs = Object.entries(stageTotals)
+            .filter(([label]) => !label.includes("Awake") && !label.includes("Out of bed"))
+            .reduce((sum, [, ms]) => sum + ms, 0);
+
+          // --- Build output ---
+          let result = `📅 ${dateStr}\n`;
+          result += `${"─".repeat(40)}\n\n`;
+
+          result += `👟 Steps\n`;
+          result += `   ${steps.toLocaleString()} steps\n\n`;
+
+          result += `😴 Sleep\n`;
+
+          if (Object.keys(stageTotals).length === 0) {
+            // Fallback: use session duration if no segment data
+            const session = sleepSessions.session?.[0];
+            if (session) {
+              const sessionMs =
+                Number(session.endTimeMillis) - Number(session.startTimeMillis);
+              result += `   Total: ${formatDuration(sessionMs)}\n`;
+              result += `   (No stage breakdown available)\n`;
+            } else {
+              result += `   No sleep data found for yesterday.\n`;
+            }
+          } else {
+            result += `   Total sleep: ${formatDuration(totalSleepMs)}\n\n`;
+            result += `   Breakdown:\n`;
+            for (const [label, ms] of Object.entries(stageTotals)) {
+              result += `   • ${label}: ${formatDuration(ms)}\n`;
+            }
+          }
+
+          log(result);
+        };
+      }
+
+      window.addEventListener("load", () => {
+        const interval = setInterval(() => {
+          if (window.google && google.accounts) {
+            clearInterval(interval);
+            initGoogleAuth();
+          }
+        }, 100);
+      });
+    </script>
+  </body>
+</html>

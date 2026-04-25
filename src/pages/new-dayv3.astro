@@ -1,0 +1,783 @@
+---
+import Layout from '../layouts/Layout.astro';
+import "../styles/global.css";
+---
+
+<Layout>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=Instrument+Serif:ital@0;1&display=swap');
+
+  :root {
+    --font-body:'Inter',sans-serif;
+    --font-display:'Instrument Serif',Georgia,serif;
+    --text-xs:clamp(.75rem,.7rem + .25vw,.875rem);
+    --text-sm:clamp(.875rem,.8rem + .35vw,1rem);
+    --text-base:clamp(1rem,.95rem + .25vw,1.125rem);
+    --text-lg:clamp(1.125rem,1rem + .75vw,1.5rem);
+    --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;
+    --space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;
+    --space-8:2rem;--space-10:2.5rem;
+    --color-bg:#f4f6fb;
+    --color-surface:#fff;
+    --color-surface-2:#f8f9fc;
+    --color-border:#dde1ee;
+    --color-divider:#e8eaf2;
+    --color-text:#1a1d2e;
+    --color-text-muted:#5a6080;
+    --color-text-faint:#9ba3c0;
+    --color-primary:#4f62e8;
+    --color-primary-hover:#3a4dc9;
+    --color-primary-highlight:#e8ebfd;
+    --color-accent:#7c5cbf;
+    --color-success:#27a56e;
+    --color-star:#f5a623;
+    --radius-lg:.75rem;
+    --radius-xl:1rem;
+    --radius-2xl:1.5rem;
+    --radius-full:9999px;
+    --shadow-sm:0 1px 3px rgba(30,40,100,.07);
+    --shadow-md:0 4px 16px rgba(30,40,100,.09);
+    --transition:180ms cubic-bezier(.16,1,.3,1);
+  }
+
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  input,button,textarea,select{font:inherit;color:inherit}
+  button{cursor:pointer;background:none;border:none}
+  :focus-visible{outline:2px solid var(--color-primary);outline-offset:3px;border-radius:.375rem}
+  html,body{height:100%}
+  body{
+    font-family:var(--font-body);
+    background:var(--color-bg);
+    color:var(--color-text);
+    min-height:100dvh;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ── Layout ── */
+  .chat-page{
+    display:flex;flex-direction:column;
+    height:100dvh;max-width:680px;
+    margin-inline:auto;width:100%;
+  }
+
+  /* ── Header ── */
+  .chat-hdr{
+    display:flex;align-items:center;gap:var(--space-3);
+    padding:.9rem 1.4rem;
+    border-bottom:1px solid var(--color-border);
+    background:rgba(244,246,251,.94);
+    backdrop-filter:blur(14px);
+    flex-shrink:0;
+  }
+  .chat-hdr-av{
+    width:40px;height:40px;border-radius:50%;
+    background:linear-gradient(135deg,var(--color-primary),var(--color-accent));
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.15rem;flex-shrink:0;
+    box-shadow:0 0 14px color-mix(in oklab,var(--color-primary) 25%,transparent);
+  }
+  .chat-hdr-info{flex:1}
+  .chat-hdr-name{font-size:var(--text-sm);font-weight:700;color:var(--color-text)}
+  .chat-hdr-status{
+    font-size:var(--text-xs);color:var(--color-text-muted);
+    display:flex;align-items:center;gap:.35rem;margin-top:1px;
+  }
+  .chat-hdr-status::before{
+    content:'';width:7px;height:7px;border-radius:50%;
+    background:var(--color-success);flex-shrink:0;
+  }
+  .chat-hdr-progress{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+  .chat-hdr-steps{font-size:var(--text-xs);font-weight:600;color:var(--color-text-muted)}
+  .chat-hdr-track{
+    width:80px;height:4px;background:var(--color-border);
+    border-radius:var(--radius-full);overflow:hidden;
+  }
+  .chat-hdr-fill{
+    height:100%;border-radius:var(--radius-full);
+    background:linear-gradient(90deg,var(--color-primary),var(--color-accent));
+    width:0%;transition:width .5s cubic-bezier(.16,1,.3,1);
+  }
+  .chat-back{
+    display:inline-flex;align-items:center;gap:4px;
+    font-size:var(--text-xs);font-weight:600;
+    color:var(--color-text-muted);text-decoration:none;
+    padding:var(--space-2) var(--space-3);
+    border:1.5px solid var(--color-border);border-radius:var(--radius-full);
+    transition:all var(--transition);
+  }
+  .chat-back:hover{border-color:var(--color-primary);color:var(--color-primary)}
+
+  /* ── Messages ── */
+  .chat-msgs{
+    flex:1;overflow-y:auto;
+    padding:1.5rem 1.4rem;
+    display:flex;flex-direction:column;gap:1rem;
+    scroll-behavior:smooth;
+  }
+  .chat-msgs::-webkit-scrollbar{width:4px}
+  .chat-msgs::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+
+  .chat-row{display:flex;gap:.6rem;align-items:flex-end;max-width:90%}
+  .chat-row.ai{align-self:flex-start}
+  .chat-row.user{align-self:flex-end;flex-direction:row-reverse}
+
+  .chat-av{
+    width:28px;height:28px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    font-size:.8rem;margin-bottom:2px;
+  }
+  .ai .chat-av{
+    background:linear-gradient(135deg,var(--color-primary),var(--color-accent));
+    box-shadow:0 0 10px color-mix(in oklab,var(--color-primary) 20%,transparent);
+  }
+  .user .chat-av{background:var(--color-surface-2);border:1px solid var(--color-border)}
+
+  .chat-col{display:flex;flex-direction:column;gap:2px}
+
+  .chat-bubble{
+    padding:.65rem 1rem;
+    border-radius:var(--radius-xl);
+    font-size:var(--text-sm);line-height:1.65;
+  }
+  .ai .chat-bubble{
+    background:var(--color-surface);
+    border:1px solid var(--color-border);
+    color:var(--color-text);
+    border-bottom-left-radius:var(--radius-lg);
+    box-shadow:var(--shadow-sm);
+  }
+  .user .chat-bubble{
+    background:var(--color-primary);color:#fff;
+    border-bottom-right-radius:var(--radius-lg);
+  }
+  .chat-time{
+    font-size:.68rem;color:var(--color-text-faint);
+    padding:0 .25rem;
+  }
+  .user .chat-time{text-align:right}
+
+  /* ── Typing indicator ── */
+  .chat-typing{display:flex;gap:4px;align-items:center;padding:.7rem 1rem}
+  .chat-typing span{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--color-text-faint);
+    animation:bounce 1.2s ease-in-out infinite;
+  }
+  .chat-typing span:nth-child(2){animation-delay:.2s}
+  .chat-typing span:nth-child(3){animation-delay:.4s}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+
+  /* ── Summary card (shown in final AI message) ── */
+  .summary-card{
+    margin-top:.75rem;
+    background:var(--color-surface-2);
+    border:1px solid var(--color-border);
+    border-radius:var(--radius-xl);
+    padding:var(--space-4);
+    display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);
+  }
+  .summary-item{display:flex;flex-direction:column;gap:2px}
+  .summary-label{font-size:var(--text-xs);font-weight:700;color:var(--color-text-faint);text-transform:uppercase;letter-spacing:.08em}
+  .summary-value{font-size:var(--text-sm);font-weight:600;color:var(--color-text)}
+  .summary-full{grid-column:1/-1}
+
+  /* ── Quick replies ── */
+  .quick-replies{
+    display:flex;flex-wrap:wrap;gap:var(--space-2);
+    padding:.75rem 1.4rem .5rem;
+    flex-shrink:0;
+    min-height:44px;
+  }
+  .qr-btn{
+    display:inline-flex;align-items:center;gap:var(--space-1);
+    padding:var(--space-2) var(--space-4);
+    border-radius:var(--radius-full);
+    border:1.5px solid var(--color-border);
+    font-size:var(--text-xs);font-weight:600;
+    color:var(--color-text-muted);background:var(--color-surface);
+    transition:all var(--transition);white-space:nowrap;
+  }
+  .qr-btn:hover{
+    border-color:var(--color-primary);
+    color:var(--color-primary);
+    background:var(--color-primary-highlight);
+  }
+  .qr-btn.selected{
+    background:var(--color-primary);
+    border-color:var(--color-primary);
+    color:#fff;
+  }
+
+  /* ── Star rating quick-reply ── */
+  .qr-stars{display:flex;gap:var(--space-2);padding-left:.25rem}
+  .qr-star{
+    font-size:1.6rem;color:var(--color-border);cursor:pointer;
+    transition:color var(--transition),transform var(--transition);
+    line-height:1;
+  }
+  .qr-star.lit{color:var(--color-star)}
+  .qr-star:hover{transform:scale(1.2)}
+
+  /* ── Input bar ── */
+  .chat-input-bar{
+    padding:.85rem 1.4rem;
+    border-top:1px solid var(--color-border);
+    background:rgba(244,246,251,.94);
+    backdrop-filter:blur(14px);
+    flex-shrink:0;
+  }
+  .chat-input-wrap{
+    display:flex;gap:var(--space-3);align-items:flex-end;
+    background:var(--color-surface);
+    border:1.5px solid var(--color-border);
+    border-radius:var(--radius-xl);
+    padding:.5rem .5rem .5rem 1rem;
+    transition:border-color var(--transition),box-shadow var(--transition);
+  }
+  .chat-input-wrap:focus-within{
+    border-color:var(--color-primary);
+    box-shadow:0 0 0 3px color-mix(in oklab,var(--color-primary) 12%,transparent);
+  }
+  .chat-textarea{
+    flex:1;background:transparent;border:none;outline:none;
+    resize:none;font-size:var(--text-sm);line-height:1.5;
+    color:var(--color-text);min-height:22px;max-height:100px;
+    overflow-y:auto;padding:.2rem 0;
+  }
+  .chat-textarea::placeholder{color:var(--color-text-faint)}
+  .chat-send{
+    width:34px;height:34px;border-radius:var(--radius-lg);
+    background:var(--color-primary);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+    box-shadow:0 2px 8px color-mix(in oklab,var(--color-primary) 35%,transparent);
+    transition:background var(--transition),transform var(--transition);
+  }
+  .chat-send:hover{background:var(--color-primary-hover);transform:scale(1.06)}
+  .chat-send svg{width:16px;height:16px}
+  .chat-hint{
+    font-size:var(--text-xs);color:var(--color-text-faint);
+    text-align:center;margin-top:var(--space-2);
+  }
+
+  /* ── Done banner ── */
+  .done-banner{
+    display:none;
+    align-items:center;justify-content:center;gap:var(--space-3);
+    padding:var(--space-4) var(--space-6);
+    background:color-mix(in oklab,var(--color-success) 10%,var(--color-surface));
+    border-top:1px solid color-mix(in oklab,var(--color-success) 25%,var(--color-border));
+    flex-shrink:0;
+  }
+  .done-banner.visible{display:flex}
+  .done-banner span{font-size:var(--text-sm);font-weight:600;color:var(--color-success)}
+  .done-go{
+    display:inline-flex;align-items:center;gap:var(--space-2);
+    padding:var(--space-2) var(--space-5);
+    border-radius:var(--radius-full);
+    background:var(--color-success);color:#fff;
+    font-size:var(--text-sm);font-weight:600;
+    text-decoration:none;
+    box-shadow:0 2px 8px color-mix(in oklab,var(--color-success) 40%,transparent);
+    transition:background var(--transition),transform var(--transition);
+  }
+  .done-go:hover{filter:brightness(1.08);transform:translateY(-1px)}
+
+  @media(max-width:480px){
+    .chat-hdr-track{width:56px}
+    .summary-card{grid-template-columns:1fr}
+    .summary-full{grid-column:1}
+  }
+</style>
+
+<div class="chat-page">
+
+  <!-- Header -->
+  <header class="chat-hdr">
+    <a href="/dashboard" class="chat-back" aria-label="Back to Dashboard">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+      Back
+    </a>
+    <div class="chat-av chat-hdr-av" aria-hidden="true">🌙</div>
+    <div class="chat-hdr-info">
+      <div class="chat-hdr-name">Sleep Coach</div>
+      <div class="chat-hdr-status">Ready to log today</div>
+    </div>
+    <div class="chat-hdr-progress" aria-label="Entry progress">
+      <span class="chat-hdr-steps" id="hdr-steps">0 / 9</span>
+      <div class="chat-hdr-track"><div class="chat-hdr-fill" id="hdr-fill"></div></div>
+    </div>
+  </header>
+
+  <!-- Messages -->
+  <main class="chat-msgs" id="chat-msgs" aria-live="polite" aria-label="Conversation">
+    <!-- messages injected by JS -->
+  </main>
+
+  <!-- Quick reply buttons -->
+  <div class="quick-replies" id="quick-replies" aria-label="Quick replies"></div>
+
+  <!-- Input bar -->
+  <div class="chat-input-bar" id="input-bar">
+    <div class="chat-input-wrap">
+      <textarea id="chat-input" class="chat-textarea" rows="1"
+        placeholder="Type your answer…" aria-label="Your message"></textarea>
+      <button class="chat-send" id="chat-send" aria-label="Send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+        </svg>
+      </button>
+    </div>
+    <p class="chat-hint">Enter to send · Shift+Enter for new line</p>
+  </div>
+
+  <!-- Done banner (replaces input bar when complete) -->
+  <div class="done-banner" id="done-banner" role="status">
+    <span>✓ Entry saved successfully!</span>
+    <a href="/visualisations" class="done-go">
+      View Visualisations
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </a>
+  </div>
+
+</div>
+
+<script>
+// ─── Types & state ─────────────────────────────────────────────────────────
+interface Entry {
+  date: string;
+  totalSleep: number;
+  deepSleep: number;
+  sleepQuality: string;
+  caffeineAfter3: string;
+  steps: number;
+  screenTime: number;
+  lastPhoneUse: string;
+  notes: string;
+}
+
+const entry: Partial<Entry> = {};
+
+// ─── DOM refs ──────────────────────────────────────────────────────────────
+const msgsEl     = document.getElementById('chat-msgs')     as HTMLElement;
+const qrEl       = document.getElementById('quick-replies') as HTMLElement;
+const inputEl    = document.getElementById('chat-input')    as HTMLTextAreaElement;
+const sendBtn    = document.getElementById('chat-send')     as HTMLButtonElement;
+const inputBar   = document.getElementById('input-bar')     as HTMLElement;
+const doneBanner = document.getElementById('done-banner')   as HTMLElement;
+const hdrFill    = document.getElementById('hdr-fill')      as HTMLElement;
+const hdrSteps   = document.getElementById('hdr-steps')     as HTMLElement;
+
+// ─── Conversation flow ─────────────────────────────────────────────────────
+// Each step: ask a question, parse the answer, optionally show quick-replies
+type QuickReply = { label: string; value: string };
+interface Step {
+  field: keyof Entry;
+  ask: string;
+  placeholder: string;
+  quickReplies?: QuickReply[];
+  starRating?: boolean;          // render star picker instead of text
+  validate: (raw: string) => string | null; // returns error msg or null
+  parse: (raw: string) => any;
+  format: (val: any) => string;  // how to display confirmed value in summary
+}
+
+const today = new Date().toISOString().split('T')[0];
+
+const steps: Step[] = [
+  {
+    field: 'date',
+    ask: `Hi! I'm going to help you log today's sleep and habits. Let's start — **what date are we logging?** (You can type a date like *2026-04-22* or just say "today")`,
+    placeholder: 'e.g. today or 2026-04-22',
+    quickReplies: [{ label: '📅 Today', value: today }],
+    validate: raw => {
+      const d = raw.trim().toLowerCase() === 'today' ? today : raw.trim();
+      return /^\d{4}-\d{2}-\d{2}$/.test(d) ? null : 'Please use YYYY-MM-DD format or type "today"';
+    },
+    parse: raw => raw.trim().toLowerCase() === 'today' ? today : raw.trim(),
+    format: v => v,
+  },
+  {
+    field: 'totalSleep',
+    ask: '🛌 How many **total hours** did you sleep last night?',
+    placeholder: 'e.g. 7.5',
+    quickReplies: [
+      { label: '5 h', value: '5' }, { label: '6 h', value: '6' },
+      { label: '7 h', value: '7' }, { label: '7.5 h', value: '7.5' },
+      { label: '8 h', value: '8' }, { label: '9 h', value: '9' },
+    ],
+    validate: raw => {
+      const n = parseFloat(raw);
+      return !isNaN(n) && n >= 0 && n <= 24 ? null : 'Please enter a number between 0 and 24';
+    },
+    parse: raw => parseFloat(raw),
+    format: v => `${v} h`,
+  },
+  {
+    field: 'deepSleep',
+    ask: '🌊 How many hours of **deep sleep** did you get? (Check your fitness tracker, or estimate)',
+    placeholder: 'e.g. 1.8',
+    quickReplies: [
+      { label: '0.5 h', value: '0.5' }, { label: '1 h', value: '1' },
+      { label: '1.5 h', value: '1.5' }, { label: '2 h', value: '2' },
+      { label: '2.5 h', value: '2.5' }, { label: '3 h', value: '3' },
+    ],
+    validate: raw => {
+      const n = parseFloat(raw);
+      return !isNaN(n) && n >= 0 && n <= 12 ? null : 'Please enter a number between 0 and 12';
+    },
+    parse: raw => parseFloat(raw),
+    format: v => `${v} h`,
+  },
+  {
+    field: 'sleepQuality',
+    ask: '⭐ How would you rate your **sleep quality** last night?',
+    placeholder: 'Type 1–5 or use the stars above',
+    starRating: true,
+    quickReplies: [],
+    validate: raw => {
+      const n = parseInt(raw);
+      return n >= 1 && n <= 5 ? null : 'Please pick a rating from 1 to 5';
+    },
+    parse: raw => {
+      const map: Record<string,string> = { '1':'poor','2':'poor','3':'fair','4':'good','5':'excellent' };
+      return map[raw.trim()] ?? raw.trim();
+    },
+    format: v => {
+      const labels: Record<string,string> = { poor:'Poor ★★', fair:'Fair ★★★', good:'Good ★★★★', excellent:'Excellent ★★★★★' };
+      return labels[v] ?? v;
+    },
+  },
+  {
+    field: 'caffeineAfter3',
+    ask: '☕ Did you have **caffeine after 3 PM** yesterday?',
+    placeholder: 'Yes or No',
+    quickReplies: [
+      { label: '✓ Yes', value: 'Yes' },
+      { label: '✗ No',  value: 'No'  },
+    ],
+    validate: raw => {
+      const v = raw.trim().toLowerCase();
+      return v === 'yes' || v === 'no' ? null : 'Please answer Yes or No';
+    },
+    parse: raw => raw.trim().toLowerCase() === 'yes' ? 'Yes' : 'No',
+    format: v => v,
+  },
+  {
+    field: 'steps',
+    ask: '🚶 How many **steps** did you take yesterday?',
+    placeholder: 'e.g. 8500',
+    quickReplies: [
+      { label: '<3k',   value: '2000' }, { label: '5k',    value: '5000' },
+      { label: '8k',    value: '8000' }, { label: '10k',   value: '10000' },
+      { label: '12k+',  value: '12000' },
+    ],
+    validate: raw => {
+      const n = parseInt(raw.replace(/[^0-9]/g, ''));
+      return !isNaN(n) && n >= 0 ? null : 'Please enter a number of steps';
+    },
+    parse: raw => parseInt(raw.replace(/[^0-9]/g, '')),
+    format: v => v.toLocaleString(),
+  },
+  {
+    field: 'screenTime',
+    ask: '📱 How many hours of **screen time** did you have yesterday?',
+    placeholder: 'e.g. 4.5',
+    quickReplies: [
+      { label: '1 h', value: '1' }, { label: '2 h', value: '2' },
+      { label: '3 h', value: '3' }, { label: '4 h', value: '4' },
+      { label: '6 h', value: '6' }, { label: '8 h', value: '8' },
+    ],
+    validate: raw => {
+      const n = parseFloat(raw);
+      return !isNaN(n) && n >= 0 && n <= 24 ? null : 'Please enter a number between 0 and 24';
+    },
+    parse: raw => parseFloat(raw),
+    format: v => `${v} h`,
+  },
+  {
+    field: 'lastPhoneUse',
+    ask: '🌙 What time did you **last use your phone** before bed? (24h format)',
+    placeholder: 'e.g. 22:30',
+    quickReplies: [
+      { label: '21:00', value: '21:00' }, { label: '22:00', value: '22:00' },
+      { label: '22:30', value: '22:30' }, { label: '23:00', value: '23:00' },
+      { label: '23:30', value: '23:30' }, { label: '00:00', value: '00:00' },
+    ],
+    validate: raw => /^\d{1,2}:\d{2}$/.test(raw.trim()) ? null : 'Please use HH:MM format, e.g. 22:30',
+    parse: raw => raw.trim().padStart(5, '0'),
+    format: v => v,
+  },
+  {
+    field: 'notes',
+    ask: '📝 Any **notes** about your day or sleep? (Optional — just type "skip" to finish)',
+    placeholder: 'Type a note or "skip"',
+    quickReplies: [{ label: 'Skip ›', value: 'skip' }],
+    validate: () => null,
+    parse: raw => raw.trim().toLowerCase() === 'skip' ? '' : raw.trim(),
+    format: v => v || '—',
+  },
+];
+
+// ─── Progress ─────────────────────────────────────────────────────────────
+let answered = 0;
+function updateProgress() {
+  const pct = Math.round((answered / steps.length) * 100);
+  hdrFill.style.width = pct + '%';
+  hdrSteps.textContent = `${answered} / ${steps.length}`;
+}
+updateProgress();
+
+// ─── Render helpers ───────────────────────────────────────────────────────
+function now() {
+  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function markdownToHtml(text: string): string {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+}
+
+function appendBubble(role: 'ai' | 'user', html: string, extraHtml = '') {
+  const row = document.createElement('div');
+  row.className = `chat-row ${role}`;
+
+  const av = document.createElement('div');
+  av.className = 'chat-av';
+  av.setAttribute('aria-hidden', 'true');
+  av.textContent = role === 'ai' ? '🌙' : '👤';
+
+  const col = document.createElement('div');
+  col.className = 'chat-col';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-bubble';
+  bubble.innerHTML = markdownToHtml(html) + extraHtml;
+
+  const time = document.createElement('div');
+  time.className = 'chat-time';
+  time.textContent = now();
+
+  col.append(bubble, time);
+  row.append(av, col);
+  msgsEl.appendChild(row);
+  scrollBottom();
+  return bubble;
+}
+
+function showTyping(): Promise<void> {
+  const row = document.createElement('div');
+  row.className = 'chat-row ai';
+  row.id = 'typing-row';
+  const av = document.createElement('div');
+  av.className = 'chat-av';
+  av.setAttribute('aria-hidden', 'true');
+  av.textContent = '🌙';
+  const col = document.createElement('div');
+  col.className = 'chat-col';
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-bubble';
+  bubble.innerHTML = `<div class="chat-typing" aria-label="Sleep Coach is typing"><span></span><span></span><span></span></div>`;
+  col.appendChild(bubble);
+  row.append(av, col);
+  msgsEl.appendChild(row);
+  scrollBottom();
+  return new Promise(res => setTimeout(() => {
+    row.remove();
+    res();
+  }, 900 + Math.random() * 400));
+}
+
+function scrollBottom() {
+  msgsEl.scrollTo({ top: msgsEl.scrollHeight, behavior: 'smooth' });
+}
+
+function setQuickReplies(step: Step) {
+  qrEl.innerHTML = '';
+  if (step.starRating) {
+    const wrap = document.createElement('div');
+    wrap.className = 'qr-stars';
+    wrap.setAttribute('role', 'radiogroup');
+    wrap.setAttribute('aria-label', 'Sleep quality');
+    for (let i = 1; i <= 5; i++) {
+      const star = document.createElement('span');
+      star.className = 'qr-star';
+      star.textContent = '★';
+      star.setAttribute('role', 'radio');
+      star.setAttribute('aria-checked', 'false');
+      star.setAttribute('aria-label', `${i} star${i > 1 ? 's' : ''}`);
+      star.setAttribute('tabindex', '0');
+      star.dataset.val = String(i);
+      star.addEventListener('mouseenter', () => {
+        wrap.querySelectorAll<HTMLElement>('.qr-star').forEach((s, j) =>
+          s.classList.toggle('lit', j < i));
+      });
+      star.addEventListener('mouseleave', () => {
+        // restore selected
+        const sel = parseInt(inputEl.dataset.starVal || '0');
+        wrap.querySelectorAll<HTMLElement>('.qr-star').forEach((s, j) =>
+          s.classList.toggle('lit', j < sel));
+      });
+      star.addEventListener('click', () => {
+        inputEl.dataset.starVal = String(i);
+        wrap.querySelectorAll<HTMLElement>('.qr-star').forEach((s, j) => {
+          s.classList.toggle('lit', j < i);
+          s.setAttribute('aria-checked', j === i - 1 ? 'true' : 'false');
+        });
+        inputEl.value = String(i);
+      });
+      star.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); star.click(); }
+        if (e.key === 'ArrowRight' && i < 5) (wrap.children[i] as HTMLElement).focus();
+        if (e.key === 'ArrowLeft'  && i > 1) (wrap.children[i - 2] as HTMLElement).focus();
+      });
+      wrap.appendChild(star);
+    }
+    qrEl.appendChild(wrap);
+    return;
+  }
+  (step.quickReplies ?? []).forEach(qr => {
+    const btn = document.createElement('button');
+    btn.className = 'qr-btn';
+    btn.textContent = qr.label;
+    btn.addEventListener('click', () => {
+      inputEl.value = qr.value;
+      handleSend();
+    });
+    qrEl.appendChild(btn);
+  });
+}
+
+// ─── Conversation state machine ────────────────────────────────────────────
+let currentStep = 0;
+
+async function askStep(idx: number) {
+  const step = steps[idx];
+  await showTyping();
+  appendBubble('ai', step.ask);
+  setQuickReplies(step);
+  inputEl.placeholder = step.placeholder;
+  inputEl.disabled = false;
+  inputEl.focus();
+}
+
+async function handleSend() {
+  const raw = inputEl.value.trim();
+  if (!raw) return;
+
+  const step = steps[currentStep];
+  const err = step.validate(raw);
+  if (err) {
+    await showTyping();
+    appendBubble('ai', `⚠️ ${err} — try again.`);
+    inputEl.value = '';
+    inputEl.focus();
+    return;
+  }
+
+  // Show user bubble
+  appendBubble('user', raw);
+  inputEl.value = '';
+  inputEl.dataset.starVal = '';
+  inputEl.style.height = 'auto';
+  inputEl.disabled = true;
+  qrEl.innerHTML = '';
+
+  // Save value
+  (entry as any)[step.field] = step.parse(raw);
+  answered++;
+  updateProgress();
+
+  currentStep++;
+
+  if (currentStep < steps.length) {
+    await askStep(currentStep);
+  } else {
+    await finishConversation();
+  }
+}
+
+async function finishConversation() {
+  await showTyping();
+
+  // Build summary HTML
+  const summaryHtml = `
+    <div class="summary-card">
+      <div class="summary-item">
+        <span class="summary-label">Date</span>
+        <span class="summary-value">${steps[0].format(entry.date)}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Total Sleep</span>
+        <span class="summary-value">${steps[1].format(entry.totalSleep)}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Deep Sleep</span>
+        <span class="summary-value">${steps[2].format(entry.deepSleep)}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Quality</span>
+        <span class="summary-value">${steps[3].format(entry.sleepQuality)}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Caffeine after 3 PM</span>
+        <span class="summary-value">${steps[4].format(entry.caffeineAfter3)}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Steps</span>
+        <span class="summary-value">${steps[5].format(entry.steps)}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Screen Time</span>
+        <span class="summary-value">${steps[6].format(entry.screenTime)}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Last Phone Use</span>
+        <span class="summary-value">${steps[7].format(entry.lastPhoneUse)}</span>
+      </div>
+      ${entry.notes ? `<div class="summary-item summary-full">
+        <span class="summary-label">Notes</span>
+        <span class="summary-value">${entry.notes}</span>
+      </div>` : ''}
+    </div>
+  `;
+
+  appendBubble('ai', `All done! Here's your entry for **${entry.date}**. I've saved it — great job logging today! 🎉`, summaryHtml);
+
+  // Save to localStorage
+  const existing = JSON.parse(localStorage.getItem('sleepEntries') || '[]');
+  existing.push(entry);
+  localStorage.setItem('sleepEntries', JSON.stringify(existing));
+
+  // Swap input bar for done banner
+  inputBar.style.display = 'none';
+  qrEl.innerHTML = '';
+  doneBanner.classList.add('visible');
+  scrollBottom();
+}
+
+// ─── Event listeners ───────────────────────────────────────────────────────
+inputEl.addEventListener('input', () => {
+  inputEl.style.height = 'auto';
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 100) + 'px';
+});
+
+inputEl.addEventListener('keydown', (e: KeyboardEvent) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+});
+
+sendBtn.addEventListener('click', handleSend);
+
+// ─── Start ─────────────────────────────────────────────────────────────────
+askStep(0);
+</script>
+
+</Layout>
