@@ -5,94 +5,305 @@ import "../styles/global.css";
 ---
 
 <Layout>
-  <section class="min-h-screen bg-gradient-to-b from-sky-50 to-white px-6 py-10">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    :root {
+      --bg: #0c0f14;
+      --surface: #141920;
+      --surface2: #1c2330;
+      --border: rgba(255,255,255,0.07);
+      --text: #e8edf5;
+      --muted: #6b7a99;
+      --blue: #4f8eff;
+      --green: #2dca8a;
+      --amber: #f5a623;
+      --red: #ff5e5e;
+      --purple: #a78bfa;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .landing-page {
+      min-height: 100vh;
+      background: var(--bg);
+      padding: 48px 24px 80px;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 80px;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--blue);
+      background: rgba(79,142,255,0.1);
+      border: 1px solid rgba(79,142,255,0.2);
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 24px;
+    }
+
+    .hero-eyebrow::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--blue);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    .hero h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 400;
+      line-height: 1.1;
+      color: var(--text);
+      margin: 0 0 20px;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: var(--blue);
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 600px;
+      margin: 0 auto 32px;
+      line-height: 1.7;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto 60px;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 28px;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,0.12);
+    }
+
+    .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+    }
+
+    .feature-card h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: var(--text);
+      margin: 0 0 12px;
+    }
+
+    .feature-card p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .why-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .why-grid {
+      display: grid;
+      gap: 40px;
+      align-items: center;
+    }
+
+    @media (min-width: 768px) {
+      .why-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .why-content .eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 16px;
+    }
+
+    .why-content h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2rem;
+      font-weight: 400;
+      color: var(--text);
+      margin: 0 0 16px;
+    }
+
+    .why-content p {
+      font-size: 1rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .process-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .process-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .process-card .label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 8px;
+    }
+
+    .process-card .title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.1rem;
+      font-weight: 400;
+      color: var(--text);
+      margin: 0;
+    }
+  </style>
+
+  <section class="landing-page">
     <div class="mx-auto flex max-w-6xl flex-col justify-center gap-16">
       
-      <div class="flex flex-col items-center gap-6 text-center pt-10">
-        <p class="rounded-full bg-sky-100 px-4 py-2 text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
-          Personal Sleep Informatics
-        </p>
+      <div class="hero">
+        <p class="hero-eyebrow">Personal Sleep Informatics</p>
 
-        <h1 class="max-w-5xl text-5xl font-extrabold leading-tight text-slate-900 md:text-7xl">
-          Optimize your daily habits to enhance deep sleep
+        <h1>
+          Optimize your daily habits to <em>enhance deep sleep</em>
         </h1>
 
-        <p class="max-w-3xl text-lg leading-8 text-slate-600 md:text-xl">
+        <p>
           Track caffeine, screen time, physical activity, and sleep patterns to understand
           what helps or harms your deep sleep, then turn those insights into better habits.
         </p>
 
-        <div class="mt-4 flex flex-wrap justify-center gap-4">
+        <div class="hero-buttons">
           <a href="/dashboard">
             <MyButton name="Start Tracking" />
           </a>
         </div>
       </div>
 
-      <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div class="mb-4 text-3xl">🌙</div>
-          <h2 class="mb-3 text-xl font-bold text-slate-900">Daily tracking</h2>
-          <p class="text-slate-600">
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🌙</div>
+          <h2>Daily tracking</h2>
+          <p>
             Log total sleep, deep sleep, caffeine after 3 PM, steps, screen time, and phone use.
           </p>
         </div>
 
-        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div class="mb-4 text-3xl">📊</div>
-          <h2 class="mb-3 text-xl font-bold text-slate-900">Visual insights</h2>
-          <p class="text-slate-600">
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h2>Visual insights</h2>
+          <p>
             Explore patterns, heatmaps, and comparisons such as weekdays versus weekends.
           </p>
         </div>
 
-        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div class="mb-4 text-3xl">🎯</div>
-          <h2 class="mb-3 text-xl font-bold text-slate-900">Goals</h2>
-          <p class="text-slate-600">
+        <div class="feature-card">
+          <div class="feature-icon">🎯</div>
+          <h2>Goals</h2>
+          <p>
             Set targets like no caffeine after 3 PM and use reminders to support better habits.
           </p>
         </div>
 
-        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div class="mb-4 text-3xl">🧪</div>
-          <h2 class="mb-3 text-xl font-bold text-slate-900">Experiment mode</h2>
-          <p class="text-slate-600">
+        <div class="feature-card">
+          <div class="feature-icon">🧪</div>
+          <h2>Experiment mode</h2>
+          <p>
             Change one habit at a time and observe how it affects your deep sleep over time.
           </p>
         </div>
       </div>
 
-      <div class="grid items-center gap-8 rounded-3xl bg-slate-900 px-8 py-10 text-white md:grid-cols-2">
-        <div class="flex flex-col gap-4">
-          <p class="text-sm font-semibold uppercase tracking-[0.2em] text-sky-300">
-            Why this app
-          </p>
-          <h2 class="text-3xl font-bold md:text-4xl">
-            From passive awareness to active behavior change
-          </h2>
-          <p class="text-slate-300">
-            Instead of just collecting numbers, the system helps users connect daytime habits
-            with nighttime sleep quality in a clear, visual, and actionable way.
-          </p>
-        </div>
+      <div class="why-section">
+        <div class="why-grid">
+          <div class="why-content">
+            <p class="eyebrow">Why this app</p>
+            <h2>From passive awareness to active behavior change</h2>
+            <p>
+              Instead of just collecting numbers, the system helps users connect daytime habits
+              with nighttime sleep quality in a clear, visual, and actionable way.
+            </p>
+          </div>
 
-        <div class="grid gap-4 sm:grid-cols-2">
-          <div class="rounded-2xl bg-slate-800 p-5">
-            <p class="text-sm text-sky-300">Track</p>
-            <p class="mt-2 text-lg font-semibold">Habits and sleep</p>
-          </div>
-          <div class="rounded-2xl bg-slate-800 p-5">
-            <p class="text-sm text-sky-300">Discover</p>
-            <p class="mt-2 text-lg font-semibold">Patterns and correlations</p>
-          </div>
-          <div class="rounded-2xl bg-slate-800 p-5">
-            <p class="text-sm text-sky-300">Act</p>
-            <p class="mt-2 text-lg font-semibold">Set goals and reminders</p>
-          </div>
-          <div class="rounded-2xl bg-slate-800 p-5">
-            <p class="text-sm text-sky-300">Improve</p>
-            <p class="mt-2 text-lg font-semibold">Test one habit at a time</p>
+          <div class="process-grid">
+            <div class="process-card">
+              <p class="label">Track</p>
+              <p class="title">Habits and sleep</p>
+            </div>
+            <div class="process-card">
+              <p class="label">Discover</p>
+              <p class="title">Patterns and correlations</p>
+            </div>
+            <div class="process-card">
+              <p class="label">Act</p>
+              <p class="title">Set goals and reminders</p>
+            </div>
+            <div class="process-card">
+              <p class="label">Improve</p>
+              <p class="title">Test one habit at a time</p>
+            </div>
           </div>
         </div>
       </div>

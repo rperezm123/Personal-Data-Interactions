@@ -5,51 +5,319 @@ import "../styles/global.css";
 ---
 
 <Layout>
-  <section class="min-h-screen bg-slate-50 px-6 py-10">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    :root {
+      --bg: #0c0f14;
+      --surface: #141920;
+      --surface2: #1c2330;
+      --border: rgba(255,255,255,0.07);
+      --text: #e8edf5;
+      --muted: #6b7a99;
+      --blue: #4f8eff;
+      --green: #2dca8a;
+      --amber: #f5a623;
+      --red: #ff5e5e;
+      --purple: #a78bfa;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .goals-page {
+      min-height: 100vh;
+      background: var(--bg);
+      padding: 48px 24px 80px;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--blue);
+      background: rgba(79,142,255,0.1);
+      border: 1px solid rgba(79,142,255,0.2);
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+
+    .hero-eyebrow::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--blue);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    .hero h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      font-weight: 400;
+      line-height: 1.1;
+      color: var(--text);
+      margin: 0 0 16px;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: var(--blue);
+    }
+
+    .hero p {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto 32px;
+      line-height: 1.7;
+    }
+
+    .goals-grid {
+      display: grid;
+      gap: 24px;
+    }
+
+    @media (min-width: 1024px) {
+      .goals-grid {
+        grid-template-columns: 1.15fr 0.85fr;
+      }
+    }
+
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 32px;
+    }
+
+    .form-card h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: var(--text);
+      margin: 0 0 24px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--blue);
+    }
+
+    .form-group input::placeholder {
+      color: var(--muted);
+    }
+
+    .form-group select option {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    @media (min-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .form-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding-top: 8px;
+    }
+
+    .form-message {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .form-message.success {
+      color: var(--green);
+    }
+
+    .form-message.error {
+      color: var(--red);
+    }
+
+    .suggestions-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 28px;
+    }
+
+    .suggestions-card h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: var(--text);
+      margin: 0 0 12px;
+    }
+
+    .suggestions-card > p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0 0 20px;
+    }
+
+    .suggestion-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .suggestion-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .suggestion-card .label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .suggestion-card.blue .label { color: var(--blue); }
+    .suggestion-card.green .label { color: var(--green); }
+    .suggestion-card.purple .label { color: var(--purple); }
+    .suggestion-card.amber .label { color: var(--amber); }
+
+    .suggestion-card h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.1rem;
+      font-weight: 400;
+      color: var(--text);
+      margin: 0 0 8px;
+    }
+
+    .suggestion-card p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .info-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 28px;
+    }
+
+    .info-card h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: var(--text);
+      margin: 0 0 12px;
+    }
+
+    .info-card p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+  </style>
+
+  <section class="goals-page">
     <div class="mx-auto flex max-w-6xl flex-col gap-8">
       
-      <div class="text-center">
-        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
-          Goals
-        </p>
-        <h1 class="mt-2 text-4xl font-extrabold text-slate-900 md:text-6xl">
-          Set sleep improvement goals
+      <div class="hero">
+        <p class="hero-eyebrow">Goals</p>
+        <h1>
+          Set sleep <em>improvement goals</em>
         </h1>
-        <p class="mx-auto mt-4 max-w-3xl text-lg text-slate-600">
+        <p>
           Create your own goals and get suggestions based on the daily habits that may affect your deep sleep.
         </p>
       </div>
 
-      <div class="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+      <div class="goals-grid">
         
-        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-          <h2 class="mb-6 text-2xl font-bold text-slate-900">Create your own goal</h2>
+        <div class="form-card">
+          <h2>Create your own goal</h2>
 
           <form id="goal-form" class="grid gap-6">
-            <div>
-              <label class="mb-2 block font-semibold text-slate-800">Goal title</label>
+            <div class="form-group">
+              <label>Goal title</label>
               <input
                 id="goal-title"
                 type="text"
                 placeholder="e.g. No caffeine after 3 PM"
-                class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500"
               />
             </div>
 
-            <div>
-              <label class="mb-2 block font-semibold text-slate-800">Why do you want this goal?</label>
+            <div class="form-group">
+              <label>Why do you want this goal?</label>
               <textarea
                 id="goal-why"
                 rows="4"
                 placeholder="e.g. I think late coffee is reducing my deep sleep."
-                class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500"
               ></textarea>
             </div>
 
-            <div class="grid gap-5 md:grid-cols-2">
-              <div>
-                <label class="mb-2 block font-semibold text-slate-800">Category</label>
-                <select id="goal-category" class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Category</label>
+                <select id="goal-category">
                   <option value="">Select category</option>
                   <option value="caffeine">Caffeine</option>
                   <option value="screen-time">Screen time</option>
@@ -59,9 +327,9 @@ import "../styles/global.css";
                 </select>
               </div>
 
-              <div>
-                <label class="mb-2 block font-semibold text-slate-800">Target duration</label>
-                <select id="goal-duration" class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500">
+              <div class="form-group">
+                <label>Target duration</label>
+                <select id="goal-duration">
                   <option value="">Select duration</option>
                   <option value="3days">3 days</option>
                   <option value="1week">1 week</option>
@@ -73,9 +341,9 @@ import "../styles/global.css";
               </div>
             </div>
 
-            <div>
-              <label class="mb-2 block font-semibold text-slate-800">Reminder preference</label>
-              <select id="goal-reminder" class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500">
+            <div class="form-group">
+              <label>Reminder preference</label>
+              <select id="goal-reminder">
                 <option value="">Select reminder type</option>
                 <option value="none">No reminder</option>
                 <option value="daily">Daily reminder</option>
@@ -84,9 +352,9 @@ import "../styles/global.css";
               </select>
             </div>
 
-            <p id="goal-message" class="text-center text-sm font-medium"></p>
+            <p id="goal-message" class="form-message"></p>
 
-            <div class="flex flex-wrap gap-4 pt-2">
+            <div class="form-buttons">
               <MyButton type="submit" name="Save Goal" />
               <a href="/dashboard">
                 <MyButton name="Back to Dashboard" />
@@ -96,50 +364,50 @@ import "../styles/global.css";
         </div>
 
         <div class="flex flex-col gap-6">
-          <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 class="mb-4 text-2xl font-bold text-slate-900">Suggested goals</h2>
-            <p class="mb-5 text-slate-600">
+          <div class="suggestions-card">
+            <h2>Suggested goals</h2>
+            <p>
               Suggestions can adapt to patterns detected in the user's daily entries.
             </p>
 
-            <div class="flex flex-col gap-4">
-              <div class="rounded-2xl bg-sky-50 p-4">
-                <p class="text-sm font-semibold uppercase tracking-wide text-sky-700">Caffeine pattern</p>
-                <h3 class="mt-2 text-lg font-bold text-slate-900">Avoid caffeine after 3 PM</h3>
-                <p class="mt-2 text-slate-600">
+            <div class="suggestion-list">
+              <div class="suggestion-card blue">
+                <p class="label">Caffeine pattern</p>
+                <h3>Avoid caffeine after 3 PM</h3>
+                <p>
                   Useful if late caffeine appears on days with reduced deep sleep.
                 </p>
               </div>
 
-              <div class="rounded-2xl bg-emerald-50 p-4">
-                <p class="text-sm font-semibold uppercase tracking-wide text-emerald-700">Activity pattern</p>
-                <h3 class="mt-2 text-lg font-bold text-slate-900">Reach 8,000 steps daily</h3>
-                <p class="mt-2 text-slate-600">
+              <div class="suggestion-card green">
+                <p class="label">Activity pattern</p>
+                <h3>Reach 8,000 steps daily</h3>
+                <p>
                   Useful if low-activity days seem related to worse sleep quality.
                 </p>
               </div>
 
-              <div class="rounded-2xl bg-violet-50 p-4">
-                <p class="text-sm font-semibold uppercase tracking-wide text-violet-700">Screen routine</p>
-                <h3 class="mt-2 text-lg font-bold text-slate-900">Reduce screen time in the evening</h3>
-                <p class="mt-2 text-slate-600">
+              <div class="suggestion-card purple">
+                <p class="label">Screen routine</p>
+                <h3>Reduce screen time in the evening</h3>
+                <p>
                   Useful if high screen time or late phone use appears before poor sleep nights.
                 </p>
               </div>
 
-              <div class="rounded-2xl bg-amber-50 p-4">
-                <p class="text-sm font-semibold uppercase tracking-wide text-amber-700">Sleep consistency</p>
-                <h3 class="mt-2 text-lg font-bold text-slate-900">Keep a more regular bedtime</h3>
-                <p class="mt-2 text-slate-600">
+              <div class="suggestion-card amber">
+                <p class="label">Sleep consistency</p>
+                <h3>Keep a more regular bedtime</h3>
+                <p>
                   Useful if irregular routines are linked with shorter or lower-quality sleep.
                 </p>
               </div>
             </div>
           </div>
 
-          <div class="rounded-3xl border border-slate-200 bg-slate-900 p-6 text-white shadow-sm">
-            <h2 class="mb-4 text-2xl font-bold">How suggestions work</h2>
-            <p class="text-slate-300">
+          <div class="info-card">
+            <h2>How suggestions work</h2>
+            <p>
               The system compares daily habits such as caffeine after 3 PM, steps, screen time,
               and last phone use time with sleep outcomes to propose useful goals for behavior change.
             </p>

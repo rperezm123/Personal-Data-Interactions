@@ -1,54 +1,223 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import MyButton from '../components/button.jsx';
 import DashboardPanel from '../components/DashboardPanel.jsx';
 import "../styles/global.css";
 ---
 
 <Layout>
-  <section class="min-h-screen bg-slate-50 px-6 py-10">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    :root {
+      --bg: #0c0f14;
+      --surface: #141920;
+      --surface2: #1c2330;
+      --border: rgba(255,255,255,0.07);
+      --text: #e8edf5;
+      --muted: #6b7a99;
+      --blue: #4f8eff;
+      --green: #2dca8a;
+      --amber: #f5a623;
+      --red: #ff5e5e;
+      --purple: #a78bfa;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .dashboard-page {
+      min-height: 100vh;
+      background: var(--bg);
+      padding: 48px 24px 80px;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--blue);
+      background: rgba(79,142,255,0.1);
+      border: 1px solid rgba(79,142,255,0.2);
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+
+    .hero-eyebrow::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--blue);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    .hero h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      font-weight: 400;
+      line-height: 1.1;
+      color: var(--text);
+      margin: 0 0 16px;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: var(--blue);
+    }
+
+    .hero p {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto 32px;
+      line-height: 1.7;
+    }
+
+    .nav-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .nav-card {
+      background: rgba(20,25,32,0.6);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 24px;
+      padding: 28px;
+      text-decoration: none;
+      transition: transform 0.2s, border-color 0.2s, background 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .nav-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(79,142,255,0.3);
+      background: rgba(20,25,32,0.8);
+    }
+
+    .nav-card .icon {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+    }
+
+    .nav-card h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: var(--text);
+      margin: 0 0 12px;
+    }
+
+    .nav-card p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0 0 20px;
+    }
+
+    .btn-primary {
+      background: var(--blue);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 100px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: rgba(79,142,255,0.8);
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 12px 24px;
+      border-radius: 100px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+  </style>
+
+  <section class="dashboard-page">
     <div class="mx-auto flex max-w-6xl flex-col gap-10">
       
-      <div class="flex flex-col gap-3 text-center">
-        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
-          Dashboard
-        </p>
-        <h1 class="text-4xl font-extrabold text-slate-900 md:text-6xl">
-          Sleep Tracker Dashboard
+      <div class="hero">
+        <p class="hero-eyebrow">Dashboard</p>
+        <h1>
+          Sleep Tracker <em>Dashboard</em>
         </h1>
-        <p class="mx-auto max-w-2xl text-lg text-slate-600">
+        <p>
           Choose a date, add daily data, explore visualisations, or start a habit experiment.
         </p>
       </div>
 
       <DashboardPanel client:load />
 
-      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 place-items-center">
-        <a href="/new-day" class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-          <div class="mb-4 text-3xl">📝</div>
-          <h3 class="mb-2 text-xl font-bold text-slate-900">New Day</h3>
-          <p class="mb-5 text-slate-600">
+      <div class="nav-grid">
+        <a href="/new-day" class="nav-card">
+          <div class="icon">📝</div>
+          <h3>New Day</h3>
+          <p>
             Add sleep hours, deep sleep, caffeine, steps, and screen time.
           </p>
-          <MyButton name="Open" />
+          <button class="btn-primary">Open</button>
         </a>
 
-        <a href="/visualisations" class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-          <div class="mb-4 text-3xl">📈</div>
-          <h3 class="mb-2 text-xl font-bold text-slate-900">Visualisations</h3>
-          <p class="mb-5 text-slate-600">
+        <a href="/visualisations_new" class="nav-card">
+          <div class="icon">📈</div>
+          <h3>Visualisations</h3>
+          <p>
             Check patterns, correlations, and compare weekdays with weekends.
           </p>
-          <MyButton name="Open" />
+          <button class="btn-primary">Open</button>
         </a>
 
-        <a href="/goals" class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-          <div class="mb-4 text-3xl">🎯</div>
-          <h3 class="mb-2 text-xl font-bold text-slate-900">Goals</h3>
-          <p class="mb-5 text-slate-600">
+        <a href="/goals" class="nav-card">
+          <div class="icon">🎯</div>
+          <h3>Goals</h3>
+          <p>
             Set behavior targets such as no caffeine after 3 PM.
           </p>
-          <MyButton name="Open" />
+          <button class="btn-primary">Open</button>
         </a>
       </div>
     </div>

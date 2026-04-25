@@ -5,234 +5,223 @@ import "../styles/global.css";
 
 <Layout>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=Instrument+Serif:ital@0;1&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
 
   :root {
-    --font-body: 'Inter', sans-serif;
-    --font-display: 'Instrument Serif', Georgia, serif;
-    --text-xs:   clamp(0.75rem,  0.7rem  + 0.25vw, 0.875rem);
-    --text-sm:   clamp(0.875rem, 0.8rem  + 0.35vw, 1rem);
-    --text-base: clamp(1rem,     0.95rem + 0.25vw, 1.125rem);
-    --text-lg:   clamp(1.125rem, 1rem    + 0.75vw, 1.5rem);
-    --space-1:.25rem; --space-2:.5rem;  --space-3:.75rem;
-    --space-4:1rem;   --space-5:1.25rem;--space-6:1.5rem;
-    --space-8:2rem;   --space-10:2.5rem;
-    --color-bg:#f4f6fb;
-    --color-surface:#fff;
-    --color-surface-2:#f8f9fc;
-    --color-border:#dde1ee;
-    --color-divider:#e8eaf2;
-    --color-text:#1a1d2e;
-    --color-text-muted:#5a6080;
-    --color-text-faint:#9ba3c0;
-    --color-primary:#4f62e8;
-    --color-primary-hover:#3a4dc9;
-    --color-primary-highlight:#e8ebfd;
-    --color-accent:#7c5cbf;
-    --color-success:#27a56e;
-    --radius-lg:.75rem;
-    --radius-xl:1rem;
-    --radius-2xl:1.5rem;
-    --radius-full:9999px;
-    --shadow-sm:0 1px 3px rgba(30,40,100,.07);
-    --shadow-md:0 4px 16px rgba(30,40,100,.09);
-    --transition:180ms cubic-bezier(.16,1,.3,1);
+    --bg: #0c0f14;
+    --surface: #141920;
+    --surface2: #1c2330;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8edf5;
+    --muted: #6b7a99;
+    --blue: #4f8eff;
+    --green: #2dca8a;
+    --amber: #f5a623;
+    --red: #ff5e5e;
+    --purple: #a78bfa;
   }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  input, button, textarea, select { font: inherit; color: inherit; }
-  button { cursor: pointer; background: none; border: none; }
-  :focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; border-radius: .375rem; }
 
   body {
-    font-family: var(--font-body);
-    background: var(--color-bg);
-    color: var(--color-text);
-    -webkit-font-smoothing: antialiased;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
   }
 
-  /* ── Page shell ── */
   .page {
-  min-height: 100dvh;
-  padding: var(--space-10) var(--space-6);
-  background: #f4f6fb; /* add this */
-}
+    min-height: 100vh;
+    padding: 48px 24px 80px;
+    background: var(--bg);
+  }
 
   .container {
-    max-width: 720px;
-    margin-inline: auto;
+    max-width: 1000px;
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: var(--space-8);
+    gap: 32px;
   }
 
-  /* ── Hero ── */
   .hero { text-align: center; }
   .eyebrow {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-2);
-    font-size: var(--text-xs);
-    font-weight: 600;
-    letter-spacing: .15em;
+    gap: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--color-primary);
-    background: var(--color-primary-highlight);
-    padding: var(--space-1) var(--space-3);
-    border-radius: var(--radius-full);
-    margin-bottom: var(--space-4);
+    color: var(--blue);
+    background: rgba(79,142,255,0.1);
+    border: 1px solid rgba(79,142,255,0.2);
+    padding: 6px 14px;
+    border-radius: 100px;
+    margin-bottom: 20px;
   }
-  .eyebrow svg { width: 14px; height: 14px; }
+
+  .eyebrow::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--blue);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.7); }
+  }
+
   .hero h1 {
-    font-family: var(--font-display);
-    font-size: clamp(2rem, 1.2rem + 2.5vw, 3rem);
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
     font-weight: 400;
-    line-height: 1.15;
-    color: var(--color-text);
-    margin-bottom: var(--space-3);
+    line-height: 1.1;
+    color: var(--text);
+    margin: 0 0 16px;
   }
-  .hero h1 em { font-style: italic; color: var(--color-accent); }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--blue);
+  }
+
   .hero p {
-    font-size: var(--text-base);
-    color: var(--color-text-muted);
-    max-width: 52ch;
-    margin-inline: auto;
+    font-size: 1.05rem;
+    color: var(--muted);
+    max-width: 520px;
+    margin: 0 auto 32px;
+    line-height: 1.7;
   }
 
-  /* ── Card ── */
-  .card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-2xl);
-    padding: var(--space-6) var(--space-8);
-    box-shadow: var(--shadow-sm);
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 32px;
   }
 
-  /* ── Section header inside card ── */
-  .section-hdr {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    margin-bottom: var(--space-6);
-    padding-bottom: var(--space-4);
-    border-bottom: 1px solid var(--color-divider);
-  }
-  .section-icon {
-    width: 38px; height: 38px;
-    border-radius: var(--radius-lg);
-    background: var(--color-primary-highlight);
-    color: var(--color-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-  .section-icon svg { width: 20px; height: 20px; }
-  .section-icon.green { background: #edf7f0; color: var(--color-success); }
-  .section-icon.purple { background: #f3effe; color: var(--color-accent); }
-  .section-title { font-size: var(--text-lg); font-weight: 700; color: var(--color-text); }
-  .section-sub { font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px; }
-
-  /* ── Form grid ── */
-  .form { display: flex; flex-direction: column; gap: var(--space-8); }
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
-  .field { display: flex; flex-direction: column; gap: var(--space-2); }
-  .field-full { grid-column: 1 / -1; }
-
-  .label {
-    font-size: var(--text-sm);
-    font-weight: 600;
-    color: var(--color-text);
-  }
-  .label-hint {
+  .form-section h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
     font-weight: 400;
-    color: var(--color-text-muted);
-    font-size: var(--text-xs);
-    margin-left: var(--space-2);
+    color: var(--text);
+    margin: 0 0 20px;
   }
 
-  .input {
-    width: 100%;
-    border: 1.5px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-3) var(--space-4);
-    font-size: var(--text-sm);
-    background: var(--color-surface-2);
-    color: var(--color-text);
-    transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
-    appearance: none;
-  }
-  .input:hover { border-color: color-mix(in oklab, var(--color-primary) 40%, var(--color-border)); }
-  .input:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    background: var(--color-surface);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary) 15%, transparent);
-  }
-  .input::placeholder { color: var(--color-text-faint); }
-  textarea.input { resize: vertical; min-height: 110px; line-height: 1.7; }
-
-  /* ── Select arrow ── */
-  select.input {
-    background-image: url("image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ba3c0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right var(--space-3) center;
-    padding-right: var(--space-8);
+  .form-grid {
+    display: grid;
+    gap: 20px;
   }
 
-  /* ── Actions ── */
-  .actions {
+  @media (min-width: 768px) {
+    .form-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .form-group {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+  }
+
+  .form-group label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: var(--blue);
+  }
+
+  .form-group input::placeholder {
+    color: var(--muted);
+  }
+
+  .form-group select option {
+    background: var(--surface2);
+    color: var(--text);
+  }
+
+  .form-buttons {
+    display: flex;
+    gap: 12px;
     justify-content: center;
-    gap: var(--space-4);
-    padding-top: var(--space-2);
+    flex-wrap: wrap;
+    padding-top: 24px;
   }
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-3) var(--space-8);
-    border-radius: var(--radius-full);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    text-decoration: none;
-    transition: all var(--transition);
+
+  .save-message {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    text-align: center;
+    margin-top: 16px;
   }
+
+  .save-message.success {
+    color: var(--green);
+  }
+
+  .save-message.error {
+    color: var(--red);
+  }
+
   .btn-primary {
-    background: var(--color-primary);
-    color: #fff;
+    background: var(--blue);
+    color: white;
     border: none;
-    box-shadow: 0 4px 16px color-mix(in oklab, var(--color-primary) 40%, transparent);
+    padding: 12px 24px;
+    border-radius: 100px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
   }
+
   .btn-primary:hover {
-    background: var(--color-primary-hover);
-    box-shadow: 0 6px 20px color-mix(in oklab, var(--color-primary) 50%, transparent);
+    background: rgba(79,142,255,0.8);
     transform: translateY(-1px);
   }
+
   .btn-ghost {
     background: transparent;
-    color: var(--color-text-muted);
-    border: 1.5px solid var(--color-border);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 12px 24px;
+    border-radius: 100px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
   }
-  .btn-ghost:hover { border-color: var(--color-primary); color: var(--color-primary); }
 
-  /* ── Save message ── */
-  .save-msg {
-    text-align: center;
-    font-size: var(--text-sm);
-    font-weight: 600;
-    color: var(--color-success);
-    min-height: 1.5em;
-    opacity: 0;
-    transition: opacity var(--transition);
-  }
-  .save-msg.visible { opacity: 1; }
-
-  @media (max-width: 600px) {
-    .page { padding: var(--space-6) var(--space-4); }
-    .card { padding: var(--space-5); }
-    .grid-2 { grid-template-columns: 1fr; }
+  .btn-ghost:hover {
+    border-color: var(--blue);
+    color: var(--blue);
   }
 </style>
 
@@ -241,58 +230,36 @@ import "../styles/global.css";
 
     <!-- Hero -->
     <header class="hero">
-      <div class="eyebrow">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z"/>
-          <path d="M12 6v6l4 2"/>
-        </svg>
-        Daily Entry
-      </div>
+      <div class="eyebrow">Daily Entry</div>
       <h1>New <em>Day</em> Entry</h1>
       <p>Add today's sleep and habit data to discover how your daily behavior affects deep sleep.</p>
     </header>
 
     <!-- Form card -->
-    <div class="card">
-      <form id="day-entry-form" class="form">
+    <div class="form-card">
+      <form id="day-entry-form" class="grid gap-8">
 
         <!-- Sleep data -->
-        <section aria-labelledby="sleep-heading">
-          <div class="section-hdr">
-            <div class="section-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-              </svg>
+        <div class="form-section">
+          <h2>Sleep data</h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Date</label>
+              <input id="date" name="date" type="date" />
             </div>
-            <div>
-              <div class="section-title" id="sleep-heading">Sleep data</div>
-              <div class="section-sub">When and how long did you sleep?</div>
-            </div>
-          </div>
-          <div class="grid-2">
-            <div class="field">
-              <label class="label" for="date">Date</label>
-              <input id="date" name="date" type="date" class="input" />
-            </div>
-            <div class="field">
-              <label class="label" for="totalSleep">
-                Total Sleep Hours <span class="label-hint">h</span>
-              </label>
+            <div class="form-group">
+              <label>Total Sleep Hours</label>
               <input id="totalSleep" name="totalSleep" type="number"
-                     step="0.5" min="0" max="24" placeholder="e.g. 7.5" class="input" />
+                     step="0.5" min="0" max="24" placeholder="e.g. 7.5" />
             </div>
-            <div class="field">
-              <label class="label" for="deepSleep">
-                Deep Sleep <span class="label-hint">h</span>
-              </label>
+            <div class="form-group">
+              <label>Deep Sleep (hours)</label>
               <input id="deepSleep" name="deepSleep" type="number"
-                     step="0.1" min="0" max="24" placeholder="e.g. 1.8" class="input" />
+                     step="0.1" min="0" max="24" placeholder="e.g. 1.8" />
             </div>
-            <div class="field">
-              <label class="label" for="sleepQuality">Sleep Quality</label>
-              <select id="sleepQuality" name="sleepQuality" class="input">
+            <div class="form-group">
+              <label>Sleep Quality</label>
+              <select id="sleepQuality" name="sleepQuality">
                 <option value="">Select quality</option>
                 <option value="excellent">Excellent</option>
                 <option value="good">Good</option>
@@ -301,87 +268,54 @@ import "../styles/global.css";
               </select>
             </div>
           </div>
-        </section>
+        </div>
 
         <!-- Daily habits -->
-        <section aria-labelledby="habits-heading">
-          <div class="section-hdr">
-            <div class="section-icon green" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-              </svg>
-            </div>
-            <div>
-              <div class="section-title" id="habits-heading">Daily habits</div>
-              <div class="section-sub">Your activity and lifestyle today</div>
-            </div>
-          </div>
-          <div class="grid-2">
-            <div class="field">
-              <label class="label" for="caffeineAfter3">Caffeine After 3 PM</label>
-              <select id="caffeineAfter3" name="caffeineAfter3" class="input">
+        <div class="form-section">
+          <h2>Daily habits</h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Caffeine After 3 PM</label>
+              <select id="caffeineAfter3" name="caffeineAfter3">
                 <option value="">Select option</option>
                 <option value="No">No</option>
                 <option value="Yes">Yes</option>
               </select>
             </div>
-            <div class="field">
-              <label class="label" for="steps">Steps</label>
+            <div class="form-group">
+              <label>Steps</label>
               <input id="steps" name="steps" type="number"
-                     min="0" placeholder="e.g. 8500" class="input" />
+                     min="0" placeholder="e.g. 8500" />
             </div>
-            <div class="field">
-              <label class="label" for="screenTime">
-                Screen Time <span class="label-hint">h</span>
-              </label>
+            <div class="form-group">
+              <label>Screen Time (hours)</label>
               <input id="screenTime" name="screenTime" type="number"
-                     step="0.1" min="0" max="24" placeholder="e.g. 4.2" class="input" />
+                     step="0.1" min="0" max="24" placeholder="e.g. 4.2" />
             </div>
-            <div class="field">
-              <label class="label" for="lastPhoneUse">Last Phone Use</label>
-              <input id="lastPhoneUse" name="lastPhoneUse" type="time" class="input" />
-            </div>
-          </div>
-        </section>
-
-        <!-- Reflection -->
-        <section aria-labelledby="reflection-heading">
-          <div class="section-hdr">
-            <div class="section-icon purple" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 20h9"/>
-                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-              </svg>
-            </div>
-            <div>
-              <div class="section-title" id="reflection-heading">Reflection</div>
-              <div class="section-sub">Anything notable about today?</div>
+            <div class="form-group">
+              <label>Last Phone Use Time</label>
+              <input id="lastPhoneUse" name="lastPhoneUse" type="time" />
             </div>
           </div>
-          <div class="field">
-            <label class="label" for="notes">
-              Notes <span class="label-hint">optional</span>
-            </label>
-            <textarea id="notes" name="notes" rows="5" class="input"
-              placeholder="Add anything important about your day or sleep."></textarea>
-          </div>
-        </section>
-
-        <!-- Actions -->
-        <div class="actions">
-          <button type="submit" class="btn btn-primary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            Save Entry
-          </button>
-          <a href="/dashboard" class="btn btn-ghost">← Back to Dashboard</a>
         </div>
 
-        <p id="save-message" class="save-msg" role="status" aria-live="polite"></p>
+        <!-- Reflection -->
+        <div class="form-section">
+          <h2>Reflection</h2>
+          <div class="form-group">
+            <label>Notes</label>
+            <textarea id="notes" name="notes" rows="5"
+              placeholder="Add anything important about your day or sleep."></textarea>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="form-buttons">
+          <button type="submit" class="btn-primary">Save Entry</button>
+          <a href="/dashboard" class="btn-ghost">Back to Dashboard</a>
+        </div>
+
+        <p id="save-message" class="save-message"></p>
 
       </form>
     </div>

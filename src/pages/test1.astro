@@ -8,6 +8,63 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Google Fit API Test (Astro)</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+
+      :root {
+        --bg: #0c0f14;
+        --surface: #141920;
+        --text: #e8edf5;
+        --muted: #6b7a99;
+        --blue: #4f8eff;
+        --border: rgba(255,255,255,0.07);
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'DM Sans', sans-serif;
+        padding: 40px 24px;
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 2rem;
+        margin-bottom: 24px;
+        font-weight: 500;
+      }
+
+      button {
+        background: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border);
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 14px;
+        cursor: pointer;
+        margin-right: 12px;
+        margin-bottom: 12px;
+        transition: all 0.2s;
+      }
+
+      button:hover {
+        border-color: var(--blue);
+        color: var(--blue);
+      }
+
+      pre {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 16px;
+        color: var(--muted);
+        font-family: 'DM Mono', monospace;
+        font-size: 13px;
+        white-space: pre-wrap;
+        margin-top: 24px;
+      }
+    </style>
   </head>
 
   <body>

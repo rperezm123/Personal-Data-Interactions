@@ -180,107 +180,111 @@ export default function DashboardPanel() {
   return (
     <div className="flex flex-col gap-8">
       {loadError && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <div className="rounded-2xl border border-red-900/30 bg-red-950/30 px-4 py-3 text-sm text-red-400">
           Could not load dashboard data: {loadError}
         </div>
       )}
 
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+      <div className="rounded-3xl border border-white/7 bg-white/5 p-6 shadow-sm md:p-8">
         <div className="flex flex-col gap-6">
-          <h2 className="text-2xl font-bold text-slate-900">Select a day</h2>
+          <h2 className="text-2xl font-bold text-slate-100">Select a day</h2>
           <div className="flex justify-center">
             <BasicDateCalendar onDateChange={setSelectedDate} />
           </div>
           {loading && (
-            <p className="text-center text-sm text-slate-500">Loading your entries…</p>
+            <p className="text-center text-sm text-slate-400">Loading your entries…</p>
           )}
         </div>
       </div>
 
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+      <div className="rounded-3xl border border-white/7 bg-white/5 p-6 shadow-sm md:p-8">
         <div className="mb-6">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-400">
             Daily insight
           </p>
-          <h2 className="mt-2 text-3xl font-bold text-slate-900">
+          <h2 className="mt-2 text-3xl font-bold text-slate-100">
             {selectedEntry.date}
           </h2>
-          <p className="mt-2 max-w-2xl text-slate-600">
+          <p className="mt-2 max-w-2xl text-slate-400">
             Review the selected day and compare it with your average from saved entries.
           </p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-2xl bg-sky-50 p-5">
-            <p className="text-sm font-semibold uppercase tracking-wide text-sky-700">Deep sleep</p>
-            <p className="mt-2 text-3xl font-bold text-slate-900">
+          <div className="rounded-2xl bg-sky-950/30 border border-sky-900/30 p-5">
+            <p className="text-sm font-semibold uppercase tracking-wide text-sky-400">Deep sleep</p>
+            <p className="mt-2 text-3xl font-bold text-slate-100">
               {(Number(selectedEntry.deepSleep) || 0).toFixed(1)}h
             </p>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm text-slate-400">
               {comparisonText(selectedEntry.deepSleep, avgDeepSleep, true, 'h')}
             </p>
           </div>
 
-          <div className="rounded-2xl bg-emerald-50 p-5">
-            <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">Total sleep</p>
-            <p className="mt-2 text-3xl font-bold text-slate-900">
+          <div className="rounded-2xl bg-emerald-950/30 border border-emerald-900/30 p-5">
+            <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">Total sleep</p>
+            <p className="mt-2 text-3xl font-bold text-slate-100">
               {(Number(selectedEntry.totalSleep) || 0).toFixed(1)}h
             </p>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm text-slate-400">
               {comparisonText(selectedEntry.totalSleep, avgTotalSleep, true, 'h')}
             </p>
           </div>
 
-          <div className="rounded-2xl bg-violet-50 p-5">
-            <p className="text-sm font-semibold uppercase tracking-wide text-violet-700">Steps</p>
-            <p className="mt-2 text-3xl font-bold text-slate-900">{selectedEntry.steps}</p>
-            <p className="mt-2 text-sm text-slate-600">
+          <div className="rounded-2xl bg-violet-950/30 border border-violet-900/30 p-5">
+            <p className="text-sm font-semibold uppercase tracking-wide text-violet-400">Steps</p>
+            <p className="mt-2 text-3xl font-bold text-slate-100">{selectedEntry.steps}</p>
+            <p className="mt-2 text-sm text-slate-400">
               {comparisonText(selectedEntry.steps, avgSteps, true, ' steps')}
             </p>
           </div>
 
-          <div className="rounded-2xl bg-amber-50 p-5">
-            <p className="text-sm font-semibold uppercase tracking-wide text-amber-700">Screen time</p>
-            <p className="mt-2 text-3xl font-bold text-slate-900">
+          <div className="rounded-2xl bg-amber-950/30 border border-amber-900/30 p-5">
+            <p className="text-sm font-semibold uppercase tracking-wide text-amber-400">Screen time</p>
+            <p className="mt-2 text-3xl font-bold text-slate-100">
               {(Number(selectedEntry.screenTime) || 0).toFixed(1)}h
             </p>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm text-slate-400">
               {comparisonText(selectedEntry.screenTime, avgScreenTime, false, 'h')}
             </p>
           </div>
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-            <h3 className="text-lg font-bold text-slate-900">Behavior details</h3>
-            <div className="mt-4 flex flex-col gap-2 text-slate-600">
-              <p><span className="font-semibold text-slate-900">Sleep quality:</span> {sleepQualityDisplay}</p>
-              <p><span className="font-semibold text-slate-900">Caffeine after 3 PM:</span> {selectedEntry.caffeineAfter3}</p>
-              <p><span className="font-semibold text-slate-900">Last phone use:</span> {selectedEntry.lastPhoneUse || '—'}</p>
+          <div className="rounded-2xl border border-white/7 bg-white/5 p-5">
+            <h3 className="text-lg font-bold text-slate-100">Behavior details</h3>
+            <div className="mt-4 flex flex-col gap-2 text-slate-400">
+              <p><span className="font-semibold text-slate-200">Sleep quality:</span> {sleepQualityDisplay}</p>
+              <p><span className="font-semibold text-slate-200">Caffeine after 3 PM:</span> {selectedEntry.caffeineAfter3}</p>
+              <p><span className="font-semibold text-slate-200">Last phone use:</span> {selectedEntry.lastPhoneUse || '—'}</p>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-            <h3 className="text-lg font-bold text-slate-900">Reflection</h3>
-            <p className="mt-4 text-slate-600">{notesDisplay}</p>
+          <div className="rounded-2xl border border-white/7 bg-white/5 p-5">
+            <h3 className="text-lg font-bold text-slate-100">Reflection</h3>
+            <p className="mt-4 text-slate-400">{notesDisplay}</p>
           </div>
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <div className={insightStyle.card}>
-            <p className={insightStyle.label}>{getInsightLabel(selectedEntry, avgDeepSleep)}</p>
-            <p className="mt-2 text-slate-700">
+          <div className={selectedEntry.deepSleep >= avgDeepSleep
+            ? "rounded-2xl bg-emerald-950/30 border border-emerald-900/30 p-5"
+            : "rounded-2xl bg-amber-950/30 border border-amber-900/30 p-5"}>
+            <p className={selectedEntry.deepSleep >= avgDeepSleep
+              ? "text-sm font-semibold uppercase tracking-wide text-emerald-400"
+              : "text-sm font-semibold uppercase tracking-wide text-amber-400"}>{getInsightLabel(selectedEntry, avgDeepSleep)}</p>
+            <p className="mt-2 text-slate-300">
               {selectedEntry.deepSleep >= avgDeepSleep
                 ? "This day performed better than your average deep sleep pattern."
                 : "This day performed below your average deep sleep pattern."}
             </p>
           </div>
 
-          <div className="rounded-2xl bg-sky-50 p-5">
-            <p className="text-sm font-semibold uppercase tracking-wide text-sky-700">
+          <div className="rounded-2xl bg-sky-950/30 border border-sky-900/30 p-5">
+            <p className="text-sm font-semibold uppercase tracking-wide text-sky-400">
               Motivation
             </p>
-            <p className="mt-2 text-slate-700">
+            <p className="mt-2 text-slate-300">
               {motivationalMessage}
             </p>
           </div>

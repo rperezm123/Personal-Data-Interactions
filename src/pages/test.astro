@@ -9,6 +9,37 @@ console.log("DATA:", todos);
 console.log("ERROR:", error);
 ---
 
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0c0f14;
+    --text: #e8edf5;
+    --muted: #6b7a99;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    padding: 40px 24px;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  li {
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px;
+    color: var(--text);
+  }
+</style>
+
 <ul>
   {todos?.map((row: any) => (
     <li>
