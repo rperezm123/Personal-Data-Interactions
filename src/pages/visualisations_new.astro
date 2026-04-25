@@ -653,7 +653,10 @@ function renderDeepBar(data) {
   done('load-deep','empty-deep', valid.length > 0);
   if (!valid.length) return;
 
-  const barData = valid.map(d => ({ x: d.label, y: d.deepSleep }));
+  // Sort by date to ensure chronological order
+  const sortedValid = [...valid].sort((a, b) => a.date - b.date);
+  // Use date object for x-axis to ensure proper ordering, with label for display
+  const barData = sortedValid.map(d => ({ x: d.date, y: d.deepSleep, label: d.label }));
   const avg = barData.reduce((s,d) => s + d.y, 0) / barData.length;
   const w = Math.min($('chart-deep').parentElement.offsetWidth - 40, 500);
 
@@ -662,10 +665,14 @@ function renderDeepBar(data) {
     style: plotStyle,
     marginLeft: 48, marginRight: 10, marginTop: 10,
     marginBottom: valid.length > 8 ? 68 : 52,
-    x: { label: null, tickRotate: -45 },
+    x: { 
+      label: null, 
+      tickRotate: -45,
+      tickFormat: d => d.toLocaleDateString('en-GB', { day:'numeric', month:'short' })
+    },
     y: {
       grid: true,
-      label: null,                                  // ← removed
+      label: null,
       gridColor: 'rgba(255,255,255,0.06)',
     },
     marks: [
@@ -674,7 +681,7 @@ function renderDeepBar(data) {
         x: 'x', y: 'y',
         fill: d => d.y >= 2 ? GREEN : d.y >= 1.2 ? AMBER : RED,
         rx: 5, tip: true,
-        title: d => `${d.x}: ${d.y.toFixed(1)}h deep sleep`
+        title: d => `${d.label}: ${d.y.toFixed(1)}h deep sleep`
       }),
       Plot.ruleY([avg], { stroke: GREEN, strokeDasharray: '4,3', strokeOpacity: 0.5 }),
     ]
@@ -881,12 +888,11 @@ function renderDeepBar(data) {
 
   // Week rows
   sortedWeeks.forEach(([key, week]) => {
-    const firstDay = week.find(d => d != null);
     const lbl = document.createElement('div');
     lbl.className = 'hm-label';
-    lbl.textContent = firstDay
-      ? firstDay.date.toLocaleDateString('en-GB', { day:'numeric', month:'short' })
-      : key.split('-')[1];
+    // Use week number instead of date
+    const [year, weekNum] = key.split('-');
+    lbl.textContent = `W${weekNum}`;
     inner.appendChild(lbl);
 
     week.forEach(day => {
@@ -924,10 +930,13 @@ function renderDOW(data) {
     width: w, height: 240,
     style: plotStyle,
     marginLeft: 50, marginRight: 10, marginTop: 10, marginBottom: 40,
-    x: { label: null },
+    x: { 
+      label: null,
+      domain: DAYS  // Force correct order
+    },
     y: {
       grid: true,
-      label: null,                                  // ← removed
+      label: null,
       domain:[0, Math.max(...byDay.map(d=>d.avg))+0.5],
       gridColor: 'rgba(255,255,255,0.06)'
     },

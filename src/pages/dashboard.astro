@@ -23,7 +23,7 @@ import "../styles/global.css";
 
       <DashboardPanel client:load />
 
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 place-items-center">
         <a href="/new-day" class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
           <div class="mb-4 text-3xl">📝</div>
           <h3 class="mb-2 text-xl font-bold text-slate-900">New Day</h3>
@@ -47,15 +47,6 @@ import "../styles/global.css";
           <h3 class="mb-2 text-xl font-bold text-slate-900">Goals</h3>
           <p class="mb-5 text-slate-600">
             Set behavior targets such as no caffeine after 3 PM.
-          </p>
-          <MyButton name="Open" />
-        </a>
-
-        <a href="/experiment" class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-          <div class="mb-4 text-3xl">🧪</div>
-          <h3 class="mb-2 text-xl font-bold text-slate-900">Experiment Mode</h3>
-          <p class="mb-5 text-slate-600">
-            Test one variable at a time and observe its effect on deep sleep.
           </p>
           <MyButton name="Open" />
         </a>
