@@ -344,17 +344,6 @@ import "../styles/global.css";
                 <label>Deep Sleep (hours)</label>
                 <input id="deepSleep" type="number" step="0.1" min="0" max="24" placeholder="e.g. 1.8" />
               </div>
-
-              <div class="form-group">
-                <label>Sleep Quality</label>
-                <select id="sleepQuality">
-                  <option value="">Select quality</option>
-                  <option value="excellent">Excellent</option>
-                  <option value="good">Good</option>
-                  <option value="fair">Fair</option>
-                  <option value="poor">Poor</option>
-                </select>
-              </div>
             </div>
           </div>
 
@@ -607,7 +596,6 @@ import "../styles/global.css";
       const dateEl         = document.getElementById("date");
       const totalSleepEl   = document.getElementById("totalSleep");
       const deepSleepEl    = document.getElementById("deepSleep");
-      const sleepQualityEl = document.getElementById("sleepQuality");
       const stepsEl        = document.getElementById("steps");
       const screenTimeEl   = document.getElementById("screenTime");
       const lastPhoneEl    = document.getElementById("lastPhoneUse");
@@ -615,7 +603,6 @@ import "../styles/global.css";
       const date           = dateEl instanceof HTMLInputElement ? dateEl.value.trim() : "";
       const totalSleepRaw  = totalSleepEl instanceof HTMLInputElement ? totalSleepEl.value : "";
       const deepSleepRaw   = deepSleepEl instanceof HTMLInputElement ? deepSleepEl.value : "";
-      const sleepQuality   = sleepQualityEl instanceof HTMLSelectElement ? sleepQualityEl.value.trim() : "";
       const stepsRaw       = stepsEl instanceof HTMLInputElement ? stepsEl.value : "";
       const screenTimeRaw  = screenTimeEl instanceof HTMLInputElement ? screenTimeEl.value : "";
       const lastPhoneUse   = lastPhoneEl instanceof HTMLInputElement ? lastPhoneEl.value.trim() : "";
@@ -636,7 +623,6 @@ import "../styles/global.css";
         date:            date || null,
         Total_sleep:     hoursToMinutesOrNull(totalSleepRaw),
         Deep_sleep:      hoursToMinutesOrNull(deepSleepRaw),
-        Sleep_quality:   strOrNull(sleepQuality),
         Steps:           stepsOrNull(stepsRaw),
         Screen:          hoursToMinutesOrNull(screenTimeRaw),
         Last_phone_time: strOrNull(lastPhoneUse),
