@@ -362,15 +362,6 @@ import "../styles/global.css";
             <h2>Daily habits</h2>
             <div class="form-grid">
               <div class="form-group">
-                <label>Caffeine After 3 PM</label>
-                <select id="caffeineAfter3">
-                  <option value="">Select option</option>
-                  <option value="No">No</option>
-                  <option value="Yes">Yes</option>
-                </select>
-              </div>
-
-              <div class="form-group">
                 <label>Steps</label>
                 <input id="steps" type="number" min="0" placeholder="e.g. 8500" />
               </div>
@@ -617,7 +608,6 @@ import "../styles/global.css";
       const totalSleepEl   = document.getElementById("totalSleep");
       const deepSleepEl    = document.getElementById("deepSleep");
       const sleepQualityEl = document.getElementById("sleepQuality");
-      const caffeineEl     = document.getElementById("caffeineAfter3");
       const stepsEl        = document.getElementById("steps");
       const screenTimeEl   = document.getElementById("screenTime");
       const lastPhoneEl    = document.getElementById("lastPhoneUse");
@@ -626,7 +616,6 @@ import "../styles/global.css";
       const totalSleepRaw  = totalSleepEl instanceof HTMLInputElement ? totalSleepEl.value : "";
       const deepSleepRaw   = deepSleepEl instanceof HTMLInputElement ? deepSleepEl.value : "";
       const sleepQuality   = sleepQualityEl instanceof HTMLSelectElement ? sleepQualityEl.value.trim() : "";
-      const caffeineAfter3 = caffeineEl instanceof HTMLSelectElement ? caffeineEl.value.trim() : "";
       const stepsRaw       = stepsEl instanceof HTMLInputElement ? stepsEl.value : "";
       const screenTimeRaw  = screenTimeEl instanceof HTMLInputElement ? screenTimeEl.value : "";
       const lastPhoneUse   = lastPhoneEl instanceof HTMLInputElement ? lastPhoneEl.value.trim() : "";
@@ -641,7 +630,6 @@ import "../styles/global.css";
         const n = Number(raw);
         return Number.isFinite(n) ? Math.round(n) : null;
       };
-      const caffeineOrNull = (v = "") => v === "Yes" ? 1 : v === "No" ? 0 : null;
       const strOrNull      = (s = "") => s === "" ? null : s;
 
       return {
@@ -649,7 +637,6 @@ import "../styles/global.css";
         Total_sleep:     hoursToMinutesOrNull(totalSleepRaw),
         Deep_sleep:      hoursToMinutesOrNull(deepSleepRaw),
         Sleep_quality:   strOrNull(sleepQuality),
-        Caffeine:        caffeineOrNull(caffeineAfter3),
         Steps:           stepsOrNull(stepsRaw),
         Screen:          hoursToMinutesOrNull(screenTimeRaw),
         Last_phone_time: strOrNull(lastPhoneUse),
