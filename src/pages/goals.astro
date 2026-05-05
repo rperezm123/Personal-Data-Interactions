@@ -275,6 +275,194 @@ import "../styles/global.css";
       line-height: 1.6;
       margin: 0;
     }
+
+    /* ── Current Goals Section ── */
+    .current-goals-section {
+      margin-top: 56px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-header-left {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+    }
+
+    .section-header h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.75rem;
+      font-weight: 400;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .goals-count-pill {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--blue);
+      background: rgba(79,142,255,0.1);
+      border: 1px solid rgba(79,142,255,0.18);
+      padding: 3px 10px;
+      border-radius: 100px;
+    }
+
+    .current-goals-grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+
+    .goal-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: border-color 0.25s, transform 0.25s;
+      position: relative;
+    }
+
+    .goal-item:hover {
+      border-color: rgba(79,142,255,0.3);
+      transform: translateY(-3px);
+    }
+
+    .goal-item-accent {
+      height: 3px;
+      width: 100%;
+      flex-shrink: 0;
+    }
+
+    .accent-screen-time { background: var(--purple); }
+    .accent-phone-use   { background: var(--blue); }
+    .accent-activity    { background: var(--green); }
+    .accent-sleep       { background: var(--amber); }
+    .accent-default     { background: var(--muted); }
+
+    .goal-item-body {
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .goal-item-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .goal-category-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+
+    .badge-screen-time  { background: rgba(167,139,250,0.12); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+    .badge-phone-use    { background: rgba(79,142,255,0.12);  color: var(--blue);   border: 1px solid rgba(79,142,255,0.2); }
+    .badge-activity     { background: rgba(45,202,138,0.12);  color: var(--green);  border: 1px solid rgba(45,202,138,0.2); }
+    .badge-sleep        { background: rgba(245,166,35,0.12);  color: var(--amber);  border: 1px solid rgba(245,166,35,0.2); }
+    .badge-default      { background: rgba(107,122,153,0.12); color: var(--muted);  border: 1px solid rgba(107,122,153,0.2); }
+
+    .goal-duration-inline {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    .goal-item-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.15rem;
+      font-weight: 400;
+      color: var(--text);
+      line-height: 1.3;
+      margin: 0;
+    }
+
+    .goal-item-why {
+      font-size: 0.84rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0;
+      flex: 1;
+    }
+
+    .goal-item-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 12px 24px 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .goal-delete-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 5px 10px;
+      border-radius: 8px;
+      transition: color 0.2s, background 0.2s;
+    }
+
+    .goal-delete-btn:hover {
+      color: var(--red);
+      background: rgba(255,94,94,0.07);
+    }
+
+    .goals-empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 64px 24px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      border: 1px dashed rgba(255,255,255,0.08);
+      border-radius: 20px;
+      line-height: 1.7;
+    }
+
+    .goals-empty strong {
+      display: block;
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.2rem;
+      font-weight: 400;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .goals-loading {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 48px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
   </style>
 
   <section class="goals-page">
@@ -319,7 +507,6 @@ import "../styles/global.css";
                 <label>Category</label>
                 <select id="goal-category">
                   <option value="">Select category</option>
-                  <option value="caffeine">Caffeine</option>
                   <option value="screen-time">Screen time</option>
                   <option value="phone-use">Phone use</option>
                   <option value="activity">Physical activity</option>
@@ -341,17 +528,6 @@ import "../styles/global.css";
               </div>
             </div>
 
-            <div class="form-group">
-              <label>Reminder preference</label>
-              <select id="goal-reminder">
-                <option value="">Select reminder type</option>
-                <option value="none">No reminder</option>
-                <option value="daily">Daily reminder</option>
-                <option value="habit-risk">Only when risky habit is detected</option>
-                <option value="evening">Evening reminder</option>
-              </select>
-            </div>
-
             <p id="goal-message" class="form-message"></p>
 
             <div class="form-buttons">
@@ -371,14 +547,6 @@ import "../styles/global.css";
             </p>
 
             <div class="suggestion-list">
-              <div class="suggestion-card blue">
-                <p class="label">Caffeine pattern</p>
-                <h3>Avoid caffeine after 3 PM</h3>
-                <p>
-                  Useful if late caffeine appears on days with reduced deep sleep.
-                </p>
-              </div>
-
               <div class="suggestion-card green">
                 <p class="label">Activity pattern</p>
                 <h3>Reach 8,000 steps daily</h3>
@@ -408,12 +576,26 @@ import "../styles/global.css";
           <div class="info-card">
             <h2>How suggestions work</h2>
             <p>
-              The system compares daily habits such as caffeine after 3 PM, steps, screen time,
+              The system compares daily habits such as steps, screen time,
               and last phone use time with sleep outcomes to propose useful goals for behavior change.
             </p>
           </div>
         </div>
       </div>
+
+      <!-- Current Goals Section -->
+      <div class="current-goals-section">
+        <div class="section-header">
+          <div class="section-header-left">
+            <h2>Current goals</h2>
+            <span class="goals-count-pill" id="goals-count-label" style="display:none"></span>
+          </div>
+        </div>
+        <div class="current-goals-grid" id="current-goals-grid">
+          <div class="goals-loading">Loading goals…</div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -423,47 +605,148 @@ import "../styles/global.css";
     const form    = document.getElementById("goal-form");
     const message = document.getElementById("goal-message");
 
+    const DURATION_LABELS: Record<string, string> = {
+      "3days":    "3 days",
+      "1week":    "1 week",
+      "2weeks":   "2 weeks",
+      "1month":   "1 month",
+      "3months":  "3 months",
+      "6months":  "6 months",
+    };
+
+    const CATEGORY_BADGE: Record<string, string> = {
+      "screen-time": "badge-screen-time",
+      "phone-use":   "badge-phone-use",
+      "activity":    "badge-activity",
+      "sleep":       "badge-sleep",
+    };
+
+    const CATEGORY_LABEL: Record<string, string> = {
+      "screen-time": "Screen time",
+      "phone-use":   "Phone use",
+      "activity":    "Physical activity",
+      "sleep":       "Sleep routine",
+    };
+
+    // ── Fetch & render goals ──────────────────────────────────────
+    async function loadGoals() {
+      const grid  = document.getElementById("current-goals-grid")!;
+      const count = document.getElementById("goals-count-label")!;
+
+      const { data, error } = await supabase
+        .from("Goals")
+        .select("*")
+        .order("id", { ascending: false });
+
+      if (error) {
+        grid.innerHTML = `<div class="goals-empty"><strong>Could not load goals</strong>Something went wrong fetching your goals.</div>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        (count as HTMLElement).style.display = "none";
+        grid.innerHTML = `<div class="goals-empty"><strong>No goals yet </strong>Create your first goal above and it will appear here.</div>`;
+        return;
+      }
+
+      (count as HTMLElement).style.display = "";
+      count.textContent = `${data.length} active`;
+
+      const ACCENT: Record<string, string> = {
+        "screen-time": "accent-screen-time",
+        "phone-use":   "accent-phone-use",
+        "activity":    "accent-activity",
+        "sleep":       "accent-sleep",
+      };
+
+      grid.innerHTML = data.map((g: any) => {
+        const badgeClass  = CATEGORY_BADGE[g.category] ?? "badge-default";
+        const badgeLabel  = CATEGORY_LABEL[g.category] ?? (g.category ?? "");
+        const duration    = DURATION_LABELS[g.duration] ?? (g.duration ?? "");
+        const accentClass = ACCENT[g.category] ?? "accent-default";
+
+        return `
+          <div class="goal-item" data-id="${g.id}">
+            <div class="goal-item-accent ${accentClass}"></div>
+            <div class="goal-item-body">
+              <div class="goal-item-meta">
+                ${badgeLabel ? `<span class="goal-category-badge ${badgeClass}">${escapeHtml(badgeLabel)}</span>` : `<span></span>`}
+                ${duration ? `<span class="goal-duration-inline">${escapeHtml(duration)}</span>` : ""}
+              </div>
+              <p class="goal-item-title">${escapeHtml(g.goal_title ?? "")}</p>
+              ${g.why ? `<p class="goal-item-why">${escapeHtml(g.why)}</p>` : ""}
+            </div>
+            <div class="goal-item-footer">
+              <button class="goal-delete-btn" data-id="${g.id}">Remove</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      // Attach delete handlers
+      grid.querySelectorAll(".goal-delete-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = (btn as HTMLElement).dataset.id;
+          if (!id) return;
+          const { error } = await supabase.from("Goals").delete().eq("id", id);
+          if (!error) loadGoals();
+        });
+      });
+    }
+
+    function escapeHtml(str: string) {
+      return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    // ── Form submit ───────────────────────────────────────────────
     form?.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const titleEl    = document.getElementById("goal-title");
       const whyEl      = document.getElementById("goal-why");
+      const categoryEl = document.getElementById("goal-category");
       const durationEl = document.getElementById("goal-duration");
 
       const goal_title = titleEl instanceof HTMLInputElement     ? titleEl.value.trim()    : "";
       const why        = whyEl instanceof HTMLTextAreaElement    ? whyEl.value.trim()      : "";
+      const category   = categoryEl instanceof HTMLSelectElement ? categoryEl.value.trim() : "";
       const duration   = durationEl instanceof HTMLSelectElement ? durationEl.value.trim() : "";
 
-      // Only goal_title is truly required — why and duration are optional in the schema
       if (!goal_title) {
-        message!.className = "text-center text-sm font-medium text-red-600";
+        message!.className = "form-message error";
         message!.textContent = "Please enter a goal title.";
         return;
       }
 
-      message!.className = "text-center text-sm font-medium text-slate-500";
+      message!.className = "form-message";
       message!.textContent = "Saving…";
 
       const { error } = await supabase.from("Goals").insert([{
-        goal_title: goal_title       || null,
-        why:        why || null,
-        duration:   duration         || null,
+        goal_title: goal_title || null,
+        why:        why        || null,
+        category:   category   || null,
+        duration:   duration   || null,
       }]);
 
       if (error) {
         console.error(error);
-        message!.className = "text-center text-sm font-medium text-red-600";
+        message!.className = "form-message error";
         message!.textContent = error.message || "Could not save goal.";
         return;
       }
 
-      message!.className = "text-center text-sm font-medium text-emerald-600";
+      message!.className = "form-message success";
       message!.textContent = "Goal saved!";
       (form as HTMLFormElement).reset();
 
+      await loadGoals();
+
       setTimeout(() => {
-        window.location.href = "/dashboard";
-      }, 800);
+        message!.textContent = "";
+      }, 2000);
     });
+
+    // ── Init ──────────────────────────────────────────────────────
+    loadGoals();
   </script>
 </Layout>
